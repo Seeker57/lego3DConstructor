@@ -27,19 +27,13 @@ private slots:
     void on_turnYPos_clicked();
     void on_turnYNeg_clicked();
     void on_turnZPos_clicked();
-
     void on_turnZNeg_clicked();
 
     void on_shiftXPos_clicked();
-
     void on_shiftXNeg_clicked();
-
     void on_shiftYPos_clicked();
-
     void on_shiftYNeg_clicked();
-
     void on_shiftZPos_clicked();
-
     void on_shiftZNeg_clicked();
 
 private:

@@ -18,6 +18,7 @@ public:
     void addPoint(QString str);
     void addFace(QString str);
 
+    readObj() {};
     readObj(QString fName);
     void readFile();
     void getVertexAndFaces(float vertex[][3], GLushort faces[]);

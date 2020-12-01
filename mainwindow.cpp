@@ -27,16 +27,15 @@ void MainWindow::paintEvent(QPaintEvent* event) {
 }
 
 void MainWindow::on_pushButton_clicked() {
-    ui->openGLWidget->setFileName(":/legoBricks/models/4x2B.obj");
+    ui->openGLWidget->addBrick(":/legoBricks/models/4x2B.obj");
 }
 
 void MainWindow::on_pushButton_2_clicked() {
-    ui->openGLWidget->setFileName(":/legoBricks/models/4x2L.obj");
+    ui->openGLWidget->addBrick(":/legoBricks/models/4x2L.obj");
 }
 
-
 void MainWindow::on_pushButton_3_clicked() {
-    ui->openGLWidget->drawMyModel();
+    ui->openGLWidget->addMyModel();
 }
 
 void MainWindow::on_turnXPos_clicked() {
