@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/GLSL" lang="GLSL">
+        <file>vertexShader.vsh</file>
+        <file>fragmentShader.fsh</file>
+    </qresource>
+    <qresource prefix="/legoBricks">
+        <file>models/4x2B.obj</file>
+        <file>models/4x2L.obj</file>
+    </qresource>
+    <qresource prefix="/images">
+        <file>icons/4x2B.png</file>
+        <file>icons/4x2L.png</file>
+        <file>icons/Arrows-Down-Left-icon.png</file>
+        <file>icons/Arrows-Up-Right-icon.png</file>
+        <file>icons/Arrow-Circle-icon.png</file>
+        <file>icons/Arrow-Circle-icon2.png</file>
+        <file>icons/myModel.png</file>
+    </qresource>
+</RCC>
