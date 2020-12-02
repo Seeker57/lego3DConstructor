@@ -1,9 +1,10 @@
 #include "brick.h"
 
-Brick::Brick(QString fileName) : model(fileName), xoffset(0.0), yoffset(0.0), zoffset(0.0), deepOffset(1.3) {
+Brick::Brick(QString fileName, float deepOf, QMatrix4x4 R) : model(fileName), xoffset(0.0), yoffset(0.0), zoffset(0.0),
+    deepOffset(deepOf), rotateMatrix(R) {
 
     model.readFile();
-    rotateMatrix.setToIdentity();
+    rotatePushMatrix.setToIdentity();
     resetModelView();
 }
 
@@ -33,7 +34,8 @@ void Brick::resetModelView()
     // Вторая операция - поворот объекта
     // Умножим видовую матрицу на матрицу поворота
     modelViewMatrix *= rotateMatrix.transposed();
-    modelViewMatrix.translate(xoffset, yoffset, zoffset);
+    modelViewMatrix.translate(xoffset, zoffset, yoffset);
+    modelViewMatrix *= rotatePushMatrix.transposed();
 
     // Первая операция - масштабирование объекта (уменьшим объект, чтобы он не занимал весь экран)
     modelViewMatrix.scale(0.3, 0.3, 0.3);
@@ -79,17 +81,11 @@ void Brick::draw(QGLShaderProgram &shaderProgram) {
     shaderProgram.release();
 }
 
-// Процедура предназначена для изменения матрицы поворота, чтобы куб поворачивался в нужном направлении строго вслед за указателем мыши.
-// Вызывается, когда пользователь изменил положение указателя мыши при зажатой кнопке (мыши)
-void Brick::changeRotateMatrix(float dx, float dy) {
-
-    rotateMatrix.rotate(-dx, 0, 1, 0);         // Умножение R на матрицу поворота вокруг оси y
-    rotateMatrix.rotate(-dy, 1, 0, 0);         // Умножение R на матрицу поворота вокруг оси x
-}
-
-MyModel::MyModel() : Brick() {
+MyModel::MyModel(float deepOf, QMatrix4x4 R) : Brick() {
 
     xoffset = yoffset = zoffset = 0.0;
+    deepOffset = deepOf;
+    rotateMatrix = R;
     resetModelView();
 }
 

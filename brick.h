@@ -11,8 +11,8 @@
 #include "model.h"
 
 const float VALUE_TURN_X = 0.0832;
-const float VALUE_TURN_Y = 0.0532;
-const float VALUE_TURN_Z = 0.0832;
+const float VALUE_TURN_Y = 0.0832;
+const float VALUE_TURN_Z = 0.0532;
 
 class Brick
 {
@@ -29,12 +29,13 @@ protected:
     int width;
 
     QMatrix4x4 rotateMatrix; 		// Изначально матрица поворота равна единичной матрице
+    QMatrix4x4 rotatePushMatrix;
     QMatrix4x4 modelViewMatrix; 	// Матрица видового преобразования
     QMatrix4x4 projectMatrix;		// Матрица проектирования
 
 public:
     Brick() {};
-    Brick(QString fileName);
+    Brick(QString fileName, float deepOf, QMatrix4x4 R);
     int howPoints() { return model.points.size(); };
     void getModels(float vertex[][3], GLushort faces[]) { model.getVertexAndFaces(vertex, faces); };
     void getWindowSize(int w, int h) { height = h, width = w; };
@@ -46,15 +47,15 @@ public:
     void setTurnZPos() { zoffset -= VALUE_TURN_Z; resetModelView(); };
     void setTurnZNeg() { zoffset += VALUE_TURN_Z; resetModelView(); };
 
-    void setShiftXPos() { rotateMatrix.rotate(90, 1, 0, 0); resetModelView(); }
-    void setShiftXNeg() { rotateMatrix.rotate(-90, 1, 0, 0); resetModelView(); }
-    void setShiftYPos() { rotateMatrix.rotate(90, 0, 1, 0); resetModelView(); }
-    void setShiftYNeg() { rotateMatrix.rotate(-90, 0, 1, 0); resetModelView(); }
-    void setShiftZPos() { rotateMatrix.rotate(90, 0, 0, 1); resetModelView(); }
-    void setShiftZNeg() { rotateMatrix.rotate(-90, 0, 0, 1); resetModelView(); }
+    void setShiftXPos() { rotatePushMatrix.rotate(90, 1, 0, 0); resetModelView(); }
+    void setShiftXNeg() { rotatePushMatrix.rotate(-90, 1, 0, 0); resetModelView(); }
+    void setShiftYPos() { rotatePushMatrix.rotate(90, 0, 1, 0); resetModelView(); }
+    void setShiftYNeg() { rotatePushMatrix.rotate(-90, 0, 1, 0); resetModelView(); }
+    void setShiftZPos() { rotatePushMatrix.rotate(90, 0, 0, 1); resetModelView(); }
+    void setShiftZNeg() { rotatePushMatrix.rotate(-90, 0, 0, 1); resetModelView(); }
 
-    void setDeepOffset(float newDeep) { deepOffset -= newDeep; resetModelView(); };
-    void changeRotateMatrix(float dx, float dy);	// Процедура для изменения матрицы поворота
+    void setDeepOffset(float newDeep) { deepOffset = newDeep; resetModelView(); };
+    void setRotateMatrix(QMatrix4x4 R) { rotateMatrix = R; };	// Процедура для изменения матрицы поворота
 
     void resetProjection();		// Процедура для изменения матрицы проектирования
     void resetModelView();		// Процедура для изменения видовой матрицы
@@ -65,7 +66,7 @@ public:
 class MyModel : public Brick {
 
 public:
-    MyModel();
+    MyModel(float deepOf, QMatrix4x4 R);
     void draw(QGLShaderProgram& shaderProgram) override;
 };
 

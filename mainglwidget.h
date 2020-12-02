@@ -36,11 +36,14 @@ private:
 
     QVector<Brick*> bricks;
     int activeBrick = 0;
+    float deepOffset;
+    QMatrix4x4 rotateMatrix; 						// Изначально матрица поворота равна единичной матрице
 
-    QPoint mousePosition;			//позиция указателя мыши
-    QGLShaderProgram shaderProgram;	// Сборщик шейдерных подпрограмм
+    QPoint mousePosition;							//позиция указателя мыши
+    QGLShaderProgram shaderProgram;					// Сборщик шейдерных подпрограмм
 
-    void textOut(void);			// Процедура выводит на экран текст (подсказку)
+    void textOut(void);								// Процедура выводит на экран текст (подсказку)
+    void changeRotateMatrix(float dx, float dy);	// Процедура для изменения матрицы поворота
 
     void initializeGL();
     void resizeGL(int nWidth, int nHeight);

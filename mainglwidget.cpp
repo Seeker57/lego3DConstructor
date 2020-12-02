@@ -1,6 +1,6 @@
 #include "mainglwidget.h"
 
-MainGLWidget::MainGLWidget(QWidget *parent) : QGLWidget(parent), shaderProgram(this) {
+MainGLWidget::MainGLWidget(QWidget *parent) : QGLWidget(parent), deepOffset(1.3), shaderProgram(this) {
 
 }
 
@@ -11,6 +11,8 @@ void MainGLWidget::initializeGL() {
 
     // Фоновый цвет
     qglClearColor(QColor(Qt::black));
+
+    rotateMatrix.setToIdentity();
 
     // Инициализация шейдеров
 
@@ -63,10 +65,11 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* m_event) {
 
     // Вычислим, на сколько переместился курсор мыши между двумя событиями mouseMoveEvent
     QPoint dp = m_event->pos() - mousePosition;
+    changeRotateMatrix(dp.x(), dp.y());
 
     // Изменим матрицу поворота в соответствии с тем, как пользователь переместил курсор мыши
     for (auto brick : bricks) {
-        brick->changeRotateMatrix(dp.x(), dp.y());
+        brick->setRotateMatrix(rotateMatrix);
         brick->resetModelView();
     }
 
@@ -75,13 +78,19 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* m_event) {
     updateGL(); // Перерисовать окно
 }
 
+// Процедура предназначена для изменения матрицы поворота, чтобы куб поворачивался в нужном направлении строго вслед за указателем мыши.
+// Вызывается, когда пользователь изменил положение указателя мыши при зажатой кнопке (мыши)
+void MainGLWidget::changeRotateMatrix(float dx, float dy) {
 
+    rotateMatrix.rotate(-dx, 0, 1, 0);         // Умножение R на матрицу поворота вокруг оси y
+    rotateMatrix.rotate(-dy, 1, 0, 0);         // Умножение R на матрицу поворота вокруг оси x
+}
 
 // Обработчик события прокрутки колеса мыши
 void MainGLWidget::wheelEvent(QWheelEvent* w_event) {
 
     // При прокрутке колеса мыши изменяем глубину объекта
-    float deepOffset = w_event->delta() / 500.0;
+    deepOffset -= w_event->delta() / 500.0;
 
     for (auto brick : bricks)
         brick->setDeepOffset(deepOffset); // Обновим матрицу аффинных преобразований
@@ -105,7 +114,7 @@ void MainGLWidget::keyPressEvent(QKeyEvent* event) {
 
 void MainGLWidget::addBrick(QString fileName) {
 
-    Brick* newBrick = new Brick(fileName);
+    Brick* newBrick = new Brick(fileName, deepOffset, rotateMatrix);
     bricks.push_back(newBrick); updateGL();
     bricks[bricks.size() - 1]->getWindowSize(width(), height());
     bricks[bricks.size() - 1]->resetProjection();
@@ -114,7 +123,7 @@ void MainGLWidget::addBrick(QString fileName) {
 
 void MainGLWidget::addMyModel() {
 
-    Brick* newBrick = new MyModel();
+    Brick* newBrick = new MyModel(deepOffset, rotateMatrix);
     bricks.push_back(newBrick);
     bricks[bricks.size() - 1]->getWindowSize(width(), height());
     bricks[bricks.size() - 1]->resetProjection();
