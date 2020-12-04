@@ -33,6 +33,8 @@ protected:
     QMatrix4x4 modelViewMatrix; 	// Матрица видового преобразования
     QMatrix4x4 projectMatrix;		// Матрица проектирования
 
+    int sgn(const float& k);
+
 public:
     Brick() {};
     Brick(QString fileName, float deepOf, QMatrix4x4 R);
@@ -56,18 +58,21 @@ public:
 
     void setDeepOffset(float newDeep) { deepOffset = newDeep; resetModelView(); };
     void setRotateMatrix(QMatrix4x4 R) { rotateMatrix = R; };	// Процедура для изменения матрицы поворота
+    bool virtual pointInBrick(QVector3D sRayBegin, QVector3D sRayEnd, float& minDepth);
+    bool isCrossWithSL(QVector3D currentFaces[], QVector3D sRayBegin, QVector3D sRayEnd);
 
     void resetProjection();		// Процедура для изменения матрицы проектирования
     void resetModelView();		// Процедура для изменения видовой матрицы
 
-    virtual void draw(QGLShaderProgram& shaderProgram);
+    virtual void draw(QGLShaderProgram& shaderProgram, bool isActive);
 };
 
 class MyModel : public Brick {
 
 public:
     MyModel(float deepOf, QMatrix4x4 R);
-    void draw(QGLShaderProgram& shaderProgram) override;
+    void draw(QGLShaderProgram& shaderProgram, bool isActive) override;
+    bool pointInBrick(QVector3D worldPos1, QVector3D worldPos2, float& minDepth) override;
 };
 
 #endif // BRICK_H

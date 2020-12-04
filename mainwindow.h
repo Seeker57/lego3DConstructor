@@ -40,5 +40,6 @@ private:
     Ui::MainWindow *ui;
 
     void paintEvent(QPaintEvent* event);
+    void keyPressEvent(QKeyEvent* event);
 };
 #endif // MAINWINDOW_H

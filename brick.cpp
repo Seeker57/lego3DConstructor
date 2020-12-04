@@ -31,7 +31,7 @@ void Brick::resetModelView()
     // Умножим видовую матрицу на матрицу переноса
     modelViewMatrix.translate(0, 0, -deepOffset);
 
-    // Вторая операция - поворот объекта
+    // Вторая операция - поворот объекта, а так же перенос по заданным координатам
     // Умножим видовую матрицу на матрицу поворота
     modelViewMatrix *= rotateMatrix.transposed();
     modelViewMatrix.translate(xoffset, zoffset, yoffset);
@@ -41,17 +41,81 @@ void Brick::resetModelView()
     modelViewMatrix.scale(0.3, 0.3, 0.3);
 }
 
-void Brick::draw(QGLShaderProgram &shaderProgram) {
+bool Brick::pointInBrick(QVector3D sRayBegin, QVector3D sRayEnd, float& minDepth) {
+
+    bool inBrick = false;
+    float currentDepth = (float)INT_MAX;
+
+    for (int i = 0; i < model.faces.size(); i++) {
+
+        QVector3D currentFaces[3];
+        currentFaces[0] = projectMatrix * modelViewMatrix * model.points[model.faces[i][0]];
+        currentFaces[1] = projectMatrix * modelViewMatrix * model.points[model.faces[i][1]];
+        currentFaces[2] = projectMatrix * modelViewMatrix * model.points[model.faces[i][2]];
+
+        if (isCrossWithSL(currentFaces, sRayBegin, sRayEnd)) {
+
+            QVector3D depth = (currentFaces[0] + currentFaces[1] + currentFaces[2]) / 3.0;
+            if (depth.z() < currentDepth) {
+                currentDepth = depth.z();
+                inBrick = true;
+            }
+        }
+    }
+
+    minDepth = currentDepth;
+    return inBrick;
+}
+
+int Brick::sgn(const float& k) {
+
+  if( k > 0 )
+      return 1;
+  if( k < 0 )
+      return -1;
+  return 0;
+}
+
+bool Brick::isCrossWithSL(QVector3D currentFaces[], QVector3D sRayBegin, QVector3D sRayEnd) {
+
+    QVector3D normal = QVector3D::normal(currentFaces[0], currentFaces[1], currentFaces[2]);
+
+    float r1 = QVector3D::dotProduct(normal, sRayBegin - currentFaces[0]);
+    float r2 = QVector3D::dotProduct(normal, sRayEnd - currentFaces[0]);
+
+    if (sgn(r1) == sgn(r2))
+        return false;
+
+    QVector3D ip = (sRayBegin + ((sRayEnd - sRayBegin) * (-r1 / (r2 - r1))));
+
+    if (QVector3D::dotProduct(QVector3D::crossProduct(currentFaces[1] - currentFaces[0], ip - currentFaces[0]), normal) <= 0)
+        return false;
+    if (QVector3D::dotProduct(QVector3D::crossProduct(currentFaces[2] - currentFaces[1], ip - currentFaces[1]), normal) <= 0)
+        return false;
+    if (QVector3D::dotProduct(QVector3D::crossProduct(currentFaces[0] - currentFaces[2], ip - currentFaces[2]), normal) <= 0)
+        return false;
+
+    return true;
+}
+
+void Brick::draw(QGLShaderProgram &shaderProgram, bool isActive) {
 
     srand(100);
 
     // Массив цветов для каждой вершины
     float colors[model.points.size()][3];
+
+    float colorRange;
+    if (isActive)
+        colorRange = 100;
+    else
+        colorRange = 200;
+
     for (int i = 0; i < model.points.size(); i++) {
 
-        colors[i][0] = (rand() % 100) / 100.0;
-        colors[i][1] = (rand() % 100) / 100.0;
-        colors[i][2] = (rand() % 100) / 100.0;
+        colors[i][0] = (rand() % 100) / colorRange;
+        colors[i][1] = (rand() % 100) / colorRange;
+        colors[i][2] = (rand() % 100) / colorRange;
     }
 
     float vertices[model.points.size()][3];		//массив точек модели
@@ -89,18 +153,25 @@ MyModel::MyModel(float deepOf, QMatrix4x4 R) : Brick() {
     resetModelView();
 }
 
-void MyModel::draw(QGLShaderProgram &shaderProgram) {
+void MyModel::draw(QGLShaderProgram &shaderProgram, bool isActive) {
 
     Model myModel(20);
 
     srand(100);
     // Массив цветов для каждой вершины
     float colors[myModel.howPolygons() * 3][3];
+
+    float colorRange;
+    if (isActive)
+        colorRange = 100;
+    else
+        colorRange = 200;
+
     for (int i = 0; i < myModel.howPolygons() * 3; i++) {
 
-        colors[i][0] = (rand() % 100) / 100.0;
-        colors[i][1] = (rand() % 100) / 100.0;
-        colors[i][2] = (rand() % 100) / 100.0;
+        colors[i][0] = (rand() % 100) / colorRange;
+        colors[i][1] = (rand() % 100) / colorRange;
+        colors[i][2] = (rand() % 100) / colorRange;
     }
 
     float vertices[myModel.howPolygons() * 3][3];		//массив точек модели
@@ -127,4 +198,31 @@ void MyModel::draw(QGLShaderProgram &shaderProgram) {
     shaderProgram.disableAttributeArray("vertex");
     shaderProgram.disableAttributeArray("color");
     shaderProgram.release();
+}
+
+bool MyModel::pointInBrick(QVector3D sRayBegin, QVector3D sRayEnd, float& minDepth) {
+
+    Model myModel(20);
+    bool inBrick = false;
+    float currentDepth = (float)INT_MAX;
+
+    for (int i = 0; i < myModel.howPolygons(); i++) {
+
+        QVector3D currentFaces[3];
+        currentFaces[0] = projectMatrix * modelViewMatrix * myModel[i][0].point;
+        currentFaces[1] = projectMatrix * modelViewMatrix * myModel[i][1].point;
+        currentFaces[2] = projectMatrix * modelViewMatrix * myModel[i][2].point;
+
+        if (isCrossWithSL(currentFaces, sRayBegin, sRayEnd)) {
+
+            QVector3D depth = (currentFaces[0] + currentFaces[1] + currentFaces[2]) / 3.0;
+            if (depth.z() < currentDepth) {
+                currentDepth = depth.z();
+                inBrick = true;
+            }
+        }
+    }
+
+    minDepth = currentDepth;
+    return inBrick;
 }

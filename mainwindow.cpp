@@ -86,3 +86,24 @@ void MainWindow::on_shiftZPos_clicked() {
 void MainWindow::on_shiftZNeg_clicked() {
     ui->openGLWidget->setShiftZNeg();
 }
+
+void MainWindow::keyPressEvent(QKeyEvent* event) {
+
+    // Закрыть окно при нажатии клавиши Escape
+    if (event->key() == Qt::Key_Escape)
+        close();
+    else if (event->key() == Qt::Key_A)
+        ui->openGLWidget->setTurnXPos();
+    else if (event->key() == Qt::Key_D)
+        ui->openGLWidget->setTurnXNeg();
+    else if (event->key() == Qt::Key_Q)
+        ui->openGLWidget->setTurnYPos();
+    else if (event->key() == Qt::Key_E)
+        ui->openGLWidget->setTurnYNeg();
+    else if (event->key() == Qt::Key_S)
+        ui->openGLWidget->setTurnZPos();
+    else if (event->key() == Qt::Key_W)
+        ui->openGLWidget->setTurnZNeg();
+
+}
+

@@ -11,6 +11,7 @@
 #include <climits>
 #include <random>
 #include <ctime>
+#include "brick.h"
 
 using namespace std;
 
@@ -36,6 +37,7 @@ public:
 
     friend class MyPolygon;
     friend class Model;
+    friend class MyModel;
 };
 
 class MyPolygon {

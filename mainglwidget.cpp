@@ -1,7 +1,6 @@
 #include "mainglwidget.h"
 
-MainGLWidget::MainGLWidget(QWidget *parent) : QGLWidget(parent), deepOffset(1.3), shaderProgram(this) {
-
+MainGLWidget::MainGLWidget(QWidget *parent) : QGLWidget(parent), activeBrick(-1), deepOffset(1.3), shaderProgram(this) {
 }
 
 void MainGLWidget::initializeGL() {
@@ -44,8 +43,14 @@ void MainGLWidget::resizeGL(int nWidth, int nHeight) {
 // Внутри данной подпрограммы происходит рисование объектов
 void MainGLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    for (int i = 0; i < bricks.size(); i++)
-        bricks[i]->draw(shaderProgram);
+
+    for (int i = 0; i < bricks.size(); i++) {
+
+        if (activeBrick == i)
+            bricks[i]->draw(shaderProgram, true);
+        else
+            bricks[i]->draw(shaderProgram, false);
+    }
 
     textOut();
 }
@@ -64,7 +69,7 @@ void MainGLWidget::textOut(void) {
 void MainGLWidget::mouseMoveEvent(QMouseEvent* m_event) {
 
     // Вычислим, на сколько переместился курсор мыши между двумя событиями mouseMoveEvent
-    QPoint dp = m_event->pos() - mousePosition;
+    QPointF dp = m_event->pos() - mousePosition;
     changeRotateMatrix(dp.x(), dp.y());
 
     // Изменим матрицу поворота в соответствии с тем, как пользователь переместил курсор мыши
@@ -82,8 +87,8 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* m_event) {
 // Вызывается, когда пользователь изменил положение указателя мыши при зажатой кнопке (мыши)
 void MainGLWidget::changeRotateMatrix(float dx, float dy) {
 
-    rotateMatrix.rotate(-dx, 0, 1, 0);         // Умножение R на матрицу поворота вокруг оси y
-    rotateMatrix.rotate(-dy, 1, 0, 0);         // Умножение R на матрицу поворота вокруг оси x
+    rotateMatrix.rotate(-dx / CAMERA_SPEED, 0, 1, 0);         // Умножение R на матрицу поворота вокруг оси y
+    rotateMatrix.rotate(-dy / CAMERA_SPEED, 1, 0, 0);         // Умножение R на матрицу поворота вокруг оси x
 }
 
 // Обработчик события прокрутки колеса мыши
@@ -101,15 +106,55 @@ void MainGLWidget::wheelEvent(QWheelEvent* w_event) {
 void MainGLWidget::mousePressEvent(QMouseEvent* m_event) {
 
     mousePosition = m_event->pos();
+    getWorldPos(m_event->pos());
+    setActiveBrick();
+    updateGL();
 }
 
 
-void MainGLWidget::keyPressEvent(QKeyEvent* event) {
+void MainGLWidget::getWorldPos(QPoint screenPos) {
 
-    // Закрыть окно при нажатии клавиши Escape
-    if (event->key() == Qt::Key_Escape) {
-        close();
+    GLint viewport[4];
+    GLdouble mvm[16];
+    GLdouble projm[16];
+    GLdouble wx, wy, wz;
+
+    glGetIntegerv(GL_VIEWPORT, viewport);
+    glGetDoublev(GL_MODELVIEW_MATRIX, mvm);
+    glGetDoublev(GL_PROJECTION_MATRIX, projm);
+
+    float x = screenPos.x();
+    float y = height() - screenPos.y() - 1;
+
+    gluUnProject(x, y, -1.0f, mvm, projm, viewport, &wx, &wy, &wz);
+    sRayBegin = QVector3D(wx, wy, wz);
+
+    gluUnProject(x, y, 1.0f, mvm, projm, viewport, &wx, &wy, &wz);
+    sRayEnd = QVector3D(wx, wy, wz);
+}
+
+
+void MainGLWidget::setActiveBrick() {
+
+    int i = 0;
+    float minDepth = (float)INT_MAX;
+    int currentActiveBrick = -1;
+    float currentDepth;
+
+    for (auto brick : bricks) {
+        if (brick->pointInBrick(sRayBegin, sRayEnd, currentDepth)) {
+
+            if (currentDepth < minDepth) {
+                minDepth = currentDepth;
+                currentActiveBrick = i;
+            }
+        }
+
+        i++;
     }
+
+    if (currentActiveBrick != -1)
+        activeBrick = currentActiveBrick;
 }
 
 void MainGLWidget::addBrick(QString fileName) {
@@ -118,6 +163,7 @@ void MainGLWidget::addBrick(QString fileName) {
     bricks.push_back(newBrick); updateGL();
     bricks[bricks.size() - 1]->getWindowSize(width(), height());
     bricks[bricks.size() - 1]->resetProjection();
+    activeBrick = bricks.size() - 1;
     updateGL();
 }
 
@@ -127,6 +173,7 @@ void MainGLWidget::addMyModel() {
     bricks.push_back(newBrick);
     bricks[bricks.size() - 1]->getWindowSize(width(), height());
     bricks[bricks.size() - 1]->resetProjection();
+    activeBrick = bricks.size() - 1;
     updateGL();
 }
 
