@@ -226,3 +226,138 @@ bool MyModel::pointInBrick(QVector3D sRayBegin, QVector3D sRayEnd, float& minDep
     minDepth = currentDepth;
     return inBrick;
 }
+
+PlaneAndAxis::PlaneAndAxis(float deepOf, QMatrix4x4 R) : Brick() {
+
+    xoffset = yoffset = zoffset = 0.0;
+    deepOffset = deepOf;
+    rotateMatrix = R;
+    resetModelView();
+}
+
+void PlaneAndAxis::draw(QGLShaderProgram &shaderProgram, bool isActive) {
+
+    float vertices[44 * 2][3];		//массив точек модели
+    GLushort indeces[44 * 2];		//массив граней, которые представляют собой индексы в массике точек
+
+    QVector3D leftPY(21 * VALUE_TURN_X, 21 * VALUE_TURN_Y, 0.0);
+    QVector3D rightPY(-21 * VALUE_TURN_X, 21 * VALUE_TURN_Y, 0.0);
+    QVector3D leftPX(21 * VALUE_TURN_X, 21 * VALUE_TURN_Y, 0.0);
+    QVector3D rightPX(21 * VALUE_TURN_X, -21 * VALUE_TURN_Y, 0.0);
+
+    for (int i = 0; i < 44 * 2; i += 4) {
+
+        vertices[i][0] = leftPY.x();
+        vertices[i][1] = leftPY.y();
+        vertices[i][2] = leftPY.z();
+        vertices[i + 1][0] = rightPY.x();
+        vertices[i + 1][1] = rightPY.y();
+        vertices[i + 1][2] = rightPY.z();
+        leftPY.setY(leftPY.y() - 2 * VALUE_TURN_Y);
+        rightPY.setY(rightPY.y() - 2 * VALUE_TURN_Y);
+
+        vertices[i + 2][0] = leftPX.x();
+        vertices[i + 2][1] = leftPX.y();
+        vertices[i + 2][2] = leftPX.z();
+        vertices[i + 3][0] = rightPX.x();
+        vertices[i + 3][1] = rightPX.y();
+        vertices[i + 3][2] = rightPX.z();
+        leftPX.setX(leftPX.x() - 2 * VALUE_TURN_X);
+        rightPX.setX(rightPX.x() - 2 * VALUE_TURN_X);
+    }
+
+    for (int i = 0; i < 44 * 2; i += 4) {
+
+        indeces[i] = i;
+        indeces[i + 1] = i + 1;
+        indeces[i + 2] = i + 2;
+        indeces[i + 3] = i + 3;
+    }
+
+    // Массив цветов для каждой вершины
+    float colors[44 * 2][3];
+
+    for (int i = 0; i < 44 * 2; i++) {
+
+        colors[i][0] = 0.3f;
+        colors[i][1] = 0.3f;
+        colors[i][2] = 0.3f;
+    }
+
+    shaderProgram.bind();
+
+    // Зададим матрицу, на которую будут умножены однородные координаты вершин в вершинном шейдере
+    shaderProgram.setUniformValue("matrix", projectMatrix * modelViewMatrix);
+
+    // Передадим шейдеру весь массив вершин
+    // Третий параметр равен трем, потому что одна вершина квадрата задана в массиве vertices тремя числами
+    shaderProgram.setAttributeArray("vertex", (float*)vertices, 3);
+    shaderProgram.enableAttributeArray("vertex");
+
+    // Передаём массив цветов каждой вершины (цвет каждой вершины задаётся тремя числами)
+    shaderProgram.setAttributeArray("color", (float*)colors, 3);
+    shaderProgram.enableAttributeArray("color");
+
+    // Рисование примитива по координатам, заданным в массиве
+    // Второй параметр означает, что модель состоит из model.faces.size() граней, каждая из которых содержит 3 точки
+    glLineWidth(2);
+    glDrawElements(GL_LINES, 2 * 44, GL_UNSIGNED_SHORT, indeces);
+
+    shaderProgram.disableAttributeArray("vertex");
+    shaderProgram.disableAttributeArray("color");
+
+    float lineXVert[2][3] = {{-2, 0, 0}, {2, 0, 0}};
+    float lineXColor[2][3] = {{1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}};
+    float lineYVert[2][3] = {{0, 2, 0}, {0, -2, 0}};
+    float lineYColor[2][3] = {{0.0, 1.0, 0.0}, {0.0, 1.0, 0.0}};
+    float lineZVert[2][3] = {{0, 0, 0}, {0, 0, -2}};
+    float lineZColor[2][3] = {{0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}};
+
+    shaderProgram.setAttributeArray("vertex", (float*)lineXVert, 3);
+    shaderProgram.enableAttributeArray("vertex");
+    shaderProgram.setAttributeArray("color", (float*)lineXColor, 3);
+    shaderProgram.enableAttributeArray("color");
+    glLineWidth(2);
+    glDrawArrays(GL_LINES, 0, 2);
+    shaderProgram.disableAttributeArray("vertex");
+    shaderProgram.disableAttributeArray("color");
+
+    shaderProgram.setAttributeArray("vertex", (float*)lineYVert, 3);
+    shaderProgram.enableAttributeArray("vertex");
+    shaderProgram.setAttributeArray("color", (float*)lineYColor, 3);
+    shaderProgram.enableAttributeArray("color");
+    glLineWidth(2);
+    glDrawArrays(GL_LINES, 0, 2);
+    shaderProgram.disableAttributeArray("vertex");
+    shaderProgram.disableAttributeArray("color");
+
+    shaderProgram.setAttributeArray("vertex", (float*)lineZVert, 3);
+    shaderProgram.enableAttributeArray("vertex");
+    shaderProgram.setAttributeArray("color", (float*)lineZColor, 3);
+    shaderProgram.enableAttributeArray("color");
+    glLineWidth(2);
+    glDrawArrays(GL_LINES, 0, 2);
+    shaderProgram.disableAttributeArray("vertex");
+    shaderProgram.disableAttributeArray("color");
+
+    shaderProgram.release();
+}
+
+void PlaneAndAxis::resetModelView() {
+    // Инициализация видовой матрицы как единичной
+    modelViewMatrix.setToIdentity();
+
+    // Далее аффинные преобразования записаны в обратном порядке
+
+    // Третья операция - перенос объекта вдоль оси z (например, вглубь экрана)
+    // Умножим видовую матрицу на матрицу переноса
+    modelViewMatrix.translate(0, 0, -deepOffset);
+
+    // Вторая операция - поворот объекта, а так же перенос по заданным координатам
+    // Умножим видовую матрицу на матрицу поворота
+    modelViewMatrix *= rotateMatrix.transposed();
+    modelViewMatrix.translate(xoffset, zoffset, yoffset);
+    modelViewMatrix *= rotatePushMatrix.transposed();
+    modelViewMatrix.rotate(90, 1, 0, 0);
+}
+

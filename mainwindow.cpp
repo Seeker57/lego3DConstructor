@@ -24,6 +24,15 @@ void MainWindow::paintEvent(QPaintEvent* event) {
 
     ui->pushButton_3->setFixedSize(sizeButton, sizeButton);
     ui->pushButton_3->setIconSize(QSize(sizeButton - 4, sizeButton - 4));
+
+    ui->pushButton_4->setFixedSize(sizeButton, sizeButton);
+    ui->pushButton_4->setIconSize(QSize(sizeButton - 12, sizeButton - 12));
+
+    ui->pushButton_5->setFixedSize(sizeButton, sizeButton);
+    ui->pushButton_5->setIconSize(QSize(sizeButton - 4, sizeButton - 4));
+
+    ui->pushButton_6->setFixedSize(sizeButton, sizeButton);
+    ui->pushButton_6->setIconSize(QSize(sizeButton - 4, sizeButton - 4));
 }
 
 void MainWindow::on_pushButton_clicked() {
@@ -32,6 +41,14 @@ void MainWindow::on_pushButton_clicked() {
 
 void MainWindow::on_pushButton_2_clicked() {
     ui->openGLWidget->addBrick(":/legoBricks/models/4x2L.obj");
+}
+
+void MainWindow::on_pushButton_5_clicked() {
+    ui->openGLWidget->addBrick(":/legoBricks/models/2x2B.obj");
+}
+
+void MainWindow::on_pushButton_6_clicked() {
+    ui->openGLWidget->addBrick(":/legoBricks/models/2x2L.obj");
 }
 
 void MainWindow::on_pushButton_3_clicked() {
@@ -107,3 +124,8 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 
 }
 
+
+void MainWindow::on_pushButton_4_clicked() {
+
+    ui->openGLWidget->deleteActiveBrick();
+}

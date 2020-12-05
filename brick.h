@@ -1,9 +1,10 @@
 #ifndef BRICK_H
 #define BRICK_H
 
-#include <iostream>
 #include <QGLWidget>
+#include <iostream>
 #include <QtOpenGL>
+#include <QOpenGLWidget>
 #include <QGLShaderProgram>
 #include <QOpenGLWidget>
 #include <gl/glu.h>
@@ -51,10 +52,10 @@ public:
 
     void setShiftXPos() { rotatePushMatrix.rotate(90, 1, 0, 0); resetModelView(); }
     void setShiftXNeg() { rotatePushMatrix.rotate(-90, 1, 0, 0); resetModelView(); }
-    void setShiftYPos() { rotatePushMatrix.rotate(90, 0, 1, 0); resetModelView(); }
-    void setShiftYNeg() { rotatePushMatrix.rotate(-90, 0, 1, 0); resetModelView(); }
-    void setShiftZPos() { rotatePushMatrix.rotate(90, 0, 0, 1); resetModelView(); }
-    void setShiftZNeg() { rotatePushMatrix.rotate(-90, 0, 0, 1); resetModelView(); }
+    void setShiftYPos() { rotatePushMatrix.rotate(90, 0, 0, 1); resetModelView(); }
+    void setShiftYNeg() { rotatePushMatrix.rotate(-90, 0, 0, 1); resetModelView(); }
+    void setShiftZPos() { rotatePushMatrix.rotate(90, 0, 1, 0); resetModelView(); }
+    void setShiftZNeg() { rotatePushMatrix.rotate(-90, 0, 1, 0); resetModelView(); }
 
     void setDeepOffset(float newDeep) { deepOffset = newDeep; resetModelView(); };
     void setRotateMatrix(QMatrix4x4 R) { rotateMatrix = R; };	// Процедура для изменения матрицы поворота
@@ -62,7 +63,7 @@ public:
     bool isCrossWithSL(QVector3D currentFaces[], QVector3D sRayBegin, QVector3D sRayEnd);
 
     void resetProjection();		// Процедура для изменения матрицы проектирования
-    void resetModelView();		// Процедура для изменения видовой матрицы
+    virtual void resetModelView();		// Процедура для изменения видовой матрицы
 
     virtual void draw(QGLShaderProgram& shaderProgram, bool isActive);
 };
@@ -73,6 +74,14 @@ public:
     MyModel(float deepOf, QMatrix4x4 R);
     void draw(QGLShaderProgram& shaderProgram, bool isActive) override;
     bool pointInBrick(QVector3D worldPos1, QVector3D worldPos2, float& minDepth) override;
+};
+
+class PlaneAndAxis : public Brick {
+
+public:
+    PlaneAndAxis(float deepOf, QMatrix4x4 R);
+    void draw(QGLShaderProgram& shaderProgram, bool isActive) override;
+    void resetModelView() override;
 };
 
 #endif // BRICK_H

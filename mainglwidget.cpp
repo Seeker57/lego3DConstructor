@@ -1,6 +1,12 @@
 #include "mainglwidget.h"
 
-MainGLWidget::MainGLWidget(QWidget *parent) : QGLWidget(parent), activeBrick(-1), deepOffset(1.3), shaderProgram(this) {
+MainGLWidget::MainGLWidget(QWidget *parent) : QGLWidget(parent), plane(1.3, rotateMatrix),
+    activeBrick(-1), deepOffset(1.3), shaderProgram(this) {
+
+    rotateMatrix.setToIdentity();
+    rotateMatrix.rotate(-10, 1, 0, 0);
+    plane.setRotateMatrix(rotateMatrix);
+    plane.resetModelView();
 }
 
 void MainGLWidget::initializeGL() {
@@ -10,8 +16,6 @@ void MainGLWidget::initializeGL() {
 
     // Фоновый цвет
     qglClearColor(QColor(Qt::black));
-
-    rotateMatrix.setToIdentity();
 
     // Инициализация шейдеров
 
@@ -38,6 +42,9 @@ void MainGLWidget::resizeGL(int nWidth, int nHeight) {
         bricks[i]->getWindowSize(width(), height());
         bricks[i]->resetProjection();
     }
+
+    plane.getWindowSize(width(), height());
+    plane.resetProjection();
 }
 
 // Внутри данной подпрограммы происходит рисование объектов
@@ -52,6 +59,7 @@ void MainGLWidget::paintGL() {
             bricks[i]->draw(shaderProgram, false);
     }
 
+    plane.draw(shaderProgram, false);
     textOut();
 }
 
@@ -60,9 +68,13 @@ void MainGLWidget::textOut(void) {
     // Вывод на экран текста
     glColor3f(1, 1, 1);
     QFont text_font("Cambria", 10, QFont::Bold);
-    renderText(10, 15, "Колесо мыши - удалить/приблизить", text_font);
-    renderText(10, 30, "Зажатая кнопка мыши - повернуть сцену", text_font);
-    renderText(10, 45, "Esc - выход", text_font);
+    renderText(10, 15, "Кнопки сверху - для добавления/удаления деталей", text_font);
+    renderText(10, 30, "Выбирать детали - с помощью клавиш мыши. Созданная деталь автом. выбирается", text_font);
+    renderText(10, 45, "Изменять положение детали в пространстве - с помощью кнопок ниже или клавиш:", text_font);
+    renderText(10, 60, "по оси x - A/D, по оси y - Q/E, по оси z - W/S", text_font);
+    renderText(10, 75, "Колесо мыши - удалить/приблизить", text_font);
+    renderText(10, 90, "Зажатая кнопка мыши - повернуть сцену", text_font);
+    renderText(10, 105, "Esc - выход", text_font);
 }
 
 // Обработчик события перемещения указателя мыши (событие происходит при зажатой кнопке мыши)
@@ -77,6 +89,8 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* m_event) {
         brick->setRotateMatrix(rotateMatrix);
         brick->resetModelView();
     }
+    plane.setRotateMatrix(rotateMatrix);
+    plane.resetModelView();
 
     // Сохраним текущую позицию мыши
     mousePosition = m_event->pos();
@@ -99,6 +113,7 @@ void MainGLWidget::wheelEvent(QWheelEvent* w_event) {
 
     for (auto brick : bricks)
         brick->setDeepOffset(deepOffset); // Обновим матрицу аффинных преобразований
+    plane.setDeepOffset(deepOffset);
     updateGL(); // Перерисовать окно
 }
 
@@ -182,3 +197,4 @@ MainGLWidget::~MainGLWidget() {
     for (int i = 0; i < bricks.size(); i++)
         delete bricks[i];
 }
+

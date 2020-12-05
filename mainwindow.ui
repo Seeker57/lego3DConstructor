@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>3D-конструктор</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resourses.qrc">
+    <normaloff>:/images/icons/program.ico</normaloff>:/images/icons/program.ico</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
@@ -23,6 +27,18 @@
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QPushButton" name="pushButton">
+            <property name="toolTip">
+             <string>4x2Big</string>
+            </property>
+            <property name="statusTip">
+             <string/>
+            </property>
+            <property name="whatsThis">
+             <string/>
+            </property>
+            <property name="accessibleDescription">
+             <string/>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -34,6 +50,9 @@
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_2">
+            <property name="toolTip">
+             <string>4x2Little</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -44,7 +63,38 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="pushButton_5">
+            <property name="toolTip">
+             <string>2x2Big</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="resourses.qrc">
+              <normaloff>:/images/icons/2x2B.png</normaloff>:/images/icons/2x2B.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_6">
+            <property name="toolTip">
+             <string>2x2Little</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="resourses.qrc">
+              <normaloff>:/images/icons/2x2L.png</normaloff>:/images/icons/2x2L.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="pushButton_3">
+            <property name="toolTip">
+             <string>Модель из 5ой ЛР</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -66,6 +116,20 @@
              </size>
             </property>
            </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_4">
+            <property name="toolTip">
+             <string>Удалить деталь</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="resourses.qrc">
+              <normaloff>:/images/icons/delete.png</normaloff>:/images/icons/delete.png</iconset>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -96,6 +160,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="shiftXPos">
+              <property name="toolTip">
+               <string>повернуть на 90 по x</string>
+              </property>
               <property name="text">
                <string/>
               </property>
@@ -107,6 +174,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="shiftXNeg">
+              <property name="toolTip">
+               <string>повернуть на -90 по х</string>
+              </property>
               <property name="text">
                <string/>
               </property>
@@ -129,6 +199,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="shiftYPos">
+              <property name="toolTip">
+               <string>повернуть на 90 по y</string>
+              </property>
               <property name="text">
                <string/>
               </property>
@@ -140,6 +213,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="shiftYNeg">
+              <property name="toolTip">
+               <string>повернуть на -90 по y</string>
+              </property>
               <property name="text">
                <string/>
               </property>
@@ -162,6 +238,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="shiftZPos">
+              <property name="toolTip">
+               <string>повернуть на 90 по z</string>
+              </property>
               <property name="text">
                <string/>
               </property>
@@ -173,6 +252,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="shiftZNeg">
+              <property name="toolTip">
+               <string>повернуть на -90 по z</string>
+              </property>
               <property name="text">
                <string/>
               </property>
@@ -219,6 +301,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="turnXPos">
+              <property name="toolTip">
+               <string>сдвиг по оси x+</string>
+              </property>
               <property name="text">
                <string/>
               </property>
@@ -230,6 +315,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="turnXNeg">
+              <property name="toolTip">
+               <string>сдвиг по оси x-</string>
+              </property>
               <property name="text">
                <string/>
               </property>
@@ -252,6 +340,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="turnYPos">
+              <property name="toolTip">
+               <string>сдвиг по оси y+</string>
+              </property>
               <property name="text">
                <string/>
               </property>
@@ -263,6 +354,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="turnYNeg">
+              <property name="toolTip">
+               <string>сдвиг по оси y-</string>
+              </property>
               <property name="text">
                <string/>
               </property>
@@ -285,6 +379,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="turnZPos">
+              <property name="toolTip">
+               <string>сдвиг по оси z+</string>
+              </property>
               <property name="text">
                <string/>
               </property>
@@ -296,6 +393,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="turnZNeg">
+              <property name="toolTip">
+               <string>сдвиг по оси z-</string>
+              </property>
               <property name="text">
                <string/>
               </property>

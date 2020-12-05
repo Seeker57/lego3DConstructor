@@ -6,6 +6,8 @@
     <qresource prefix="/legoBricks">
         <file>models/4x2B.obj</file>
         <file>models/4x2L.obj</file>
+        <file>models/2x2B.obj</file>
+        <file>models/2x2L.obj</file>
     </qresource>
     <qresource prefix="/images">
         <file>icons/4x2B.png</file>
@@ -15,5 +17,9 @@
         <file>icons/Arrow-Circle-icon.png</file>
         <file>icons/Arrow-Circle-icon2.png</file>
         <file>icons/myModel.png</file>
+        <file>icons/program.ico</file>
+        <file>icons/delete.png</file>
+        <file>icons/2x2B.png</file>
+        <file>icons/2x2L.png</file>
     </qresource>
 </RCC>

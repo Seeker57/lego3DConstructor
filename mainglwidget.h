@@ -33,10 +33,12 @@ public:
 
     void addBrick(QString fileName);
     void addMyModel();
+    void deleteActiveBrick() { if (activeBrick != -1) { bricks.removeAt(activeBrick); activeBrick = -1; updateGL(); } };
 
 private:
 
     QVector<Brick*> bricks;
+    PlaneAndAxis plane;
     int activeBrick;
     float deepOffset;
     QMatrix4x4 rotateMatrix; 						// Изначально матрица поворота равна единичной матрице
