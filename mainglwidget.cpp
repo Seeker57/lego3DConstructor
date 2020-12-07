@@ -20,8 +20,6 @@ void MainGLWidget::initializeGL() {
     // Инициализация шейдеров
 
     // Вершинный шейдер
-    // Шейдер принимает на вход вектор из трех координат (x, y, z)
-    // При расчёте выходного вектора зададим координату w = 1
     shaderProgram.addShaderFromSourceFile(QGLShader::Vertex, ":/GLSL/vertexShader.vsh");
 
     // Фрагментный шейдер задаёт только цвет
@@ -97,7 +95,7 @@ void MainGLWidget::mouseMoveEvent(QMouseEvent* m_event) {
     updateGL(); // Перерисовать окно
 }
 
-// Процедура предназначена для изменения матрицы поворота, чтобы куб поворачивался в нужном направлении строго вслед за указателем мыши.
+// Процедура предназначена для изменения матрицы поворота, чтобы объекты поворачивалиcь в нужном направлении строго вслед за указателем мыши.
 // Вызывается, когда пользователь изменил положение указателя мыши при зажатой кнопке (мыши)
 void MainGLWidget::changeRotateMatrix(float dx, float dy) {
 
@@ -112,7 +110,7 @@ void MainGLWidget::wheelEvent(QWheelEvent* w_event) {
     deepOffset -= w_event->delta() / 500.0;
 
     for (auto brick : bricks)
-        brick->setDeepOffset(deepOffset); // Обновим матрицу аффинных преобразований
+        brick->setDeepOffset(deepOffset);
     plane.setDeepOffset(deepOffset);
     updateGL(); // Перерисовать окно
 }
@@ -156,9 +154,13 @@ void MainGLWidget::setActiveBrick() {
     int currentActiveBrick = -1;
     float currentDepth;
 
+    // для каждого объекта на сцене
     for (auto brick : bricks) {
+
+        //определяем пересекается ли он селект. лучом
         if (brick->pointInBrick(sRayBegin, sRayEnd, currentDepth)) {
 
+            //если да, то сраваниваем его глубину с текущей
             if (currentDepth < minDepth) {
                 minDepth = currentDepth;
                 currentActiveBrick = i;
@@ -168,6 +170,7 @@ void MainGLWidget::setActiveBrick() {
         i++;
     }
 
+    //в итоге находим ближайшим к нас объект и "выбираем" его, или оставляем прежним, если селект. луч не пересекается ни с одним объектом
     if (currentActiveBrick != -1)
         activeBrick = currentActiveBrick;
 }

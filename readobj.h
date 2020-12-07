@@ -8,11 +8,12 @@
 #include <iostream>
 #include <QGLShaderProgram>
 
+//Класс-парсер простых .obj файлов, которые содержат только координаты точек и треугольные грани без нормалей
 class readObj
 {
 public:
-    QVector<QVector3D> points; //массив точек
-    QVector< QVector<int> > faces; //массив граней
+    QVector<QVector3D> points; 		//массив точек
+    QVector< QVector<int> > faces;  //массив граней, которые представляют собой позиции в массиве точек
     QString fileName;
 
     void addPoint(QString str);
@@ -21,7 +22,7 @@ public:
     readObj() {};
     readObj(QString fName);
     void readFile();
-    void getVertexAndFaces(float vertex[][3], GLushort faces[]);
+    void getVertexAndFaces(float vertex[][3], GLushort faces[]);	//получить данные об объекте, для его послед. отрисовки
     void printPoints();
 };
 

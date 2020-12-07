@@ -46,6 +46,7 @@ bool Brick::pointInBrick(QVector3D sRayBegin, QVector3D sRayEnd, float& minDepth
     bool inBrick = false;
     float currentDepth = (float)INT_MAX;
 
+    //для каждой грани объекта
     for (int i = 0; i < model.faces.size(); i++) {
 
         QVector3D currentFaces[3];
@@ -53,8 +54,10 @@ bool Brick::pointInBrick(QVector3D sRayBegin, QVector3D sRayEnd, float& minDepth
         currentFaces[1] = projectMatrix * modelViewMatrix * model.points[model.faces[i][1]];
         currentFaces[2] = projectMatrix * modelViewMatrix * model.points[model.faces[i][2]];
 
+        //проверяем пересекается ли она селект. лучом
         if (isCrossWithSL(currentFaces, sRayBegin, sRayEnd)) {
 
+            //если да, то считаем глубину этой грани с сравниваем с текущей
             QVector3D depth = (currentFaces[0] + currentFaces[1] + currentFaces[2]) / 3.0;
             if (depth.z() < currentDepth) {
                 currentDepth = depth.z();
@@ -63,6 +66,7 @@ bool Brick::pointInBrick(QVector3D sRayBegin, QVector3D sRayEnd, float& minDepth
         }
     }
 
+    //в итоге минимальную глубину среди граней, которые пересекаются селект. лучом
     minDepth = currentDepth;
     return inBrick;
 }
@@ -76,6 +80,7 @@ int Brick::sgn(const float& k) {
   return 0;
 }
 
+//определяет, пересекается ли  треугольная грань в пространстве селект. лучом, который задан точками sRayBegin и sRayEnd
 bool Brick::isCrossWithSL(QVector3D currentFaces[], QVector3D sRayBegin, QVector3D sRayEnd) {
 
     QVector3D normal = QVector3D::normal(currentFaces[0], currentFaces[1], currentFaces[2]);
@@ -105,6 +110,7 @@ void Brick::draw(QGLShaderProgram &shaderProgram, bool isActive) {
     // Массив цветов для каждой вершины
     float colors[model.points.size()][3];
 
+    //выбираем диапазон цветов, если объект выбран, то более яркие, если нет, то более темные
     float colorRange;
     if (isActive)
         colorRange = 100;
@@ -120,7 +126,7 @@ void Brick::draw(QGLShaderProgram &shaderProgram, bool isActive) {
 
     float vertices[model.points.size()][3];		//массив точек модели
     GLushort indeces[model.faces.size() * 3];	//массив граней, которые представляют собой индексы в массике точек
-    getModels(vertices, indeces);	//получаем массив точек и граней по считанной модели
+    getModels(vertices, indeces);				//получаем массив точек и граней по считанной модели
 
     shaderProgram.bind();
 
@@ -240,11 +246,13 @@ void PlaneAndAxis::draw(QGLShaderProgram &shaderProgram, bool isActive) {
     float vertices[44 * 2][3];		//массив точек модели
     GLushort indeces[44 * 2];		//массив граней, которые представляют собой индексы в массике точек
 
+    //начинаем построение сетки с самых дальних точек
     QVector3D leftPY(21 * VALUE_TURN_X, 21 * VALUE_TURN_Y, 0.0);
     QVector3D rightPY(-21 * VALUE_TURN_X, 21 * VALUE_TURN_Y, 0.0);
     QVector3D leftPX(21 * VALUE_TURN_X, 21 * VALUE_TURN_Y, 0.0);
     QVector3D rightPX(21 * VALUE_TURN_X, -21 * VALUE_TURN_Y, 0.0);
 
+    //после чего по каждой координате x и y отступаем соотв. расстояние, кратное размеру Блока по соотв. координате
     for (int i = 0; i < 44 * 2; i += 4) {
 
         vertices[i][0] = leftPY.x();
@@ -266,6 +274,7 @@ void PlaneAndAxis::draw(QGLShaderProgram &shaderProgram, bool isActive) {
         rightPX.setX(rightPX.x() - 2 * VALUE_TURN_X);
     }
 
+    //иниц. массив вершин линий
     for (int i = 0; i < 44 * 2; i += 4) {
 
         indeces[i] = i;
@@ -300,12 +309,13 @@ void PlaneAndAxis::draw(QGLShaderProgram &shaderProgram, bool isActive) {
 
     // Рисование примитива по координатам, заданным в массиве
     // Второй параметр означает, что модель состоит из model.faces.size() граней, каждая из которых содержит 3 точки
-    glLineWidth(2);
     glDrawElements(GL_LINES, 2 * 44, GL_UNSIGNED_SHORT, indeces);
 
     shaderProgram.disableAttributeArray("vertex");
     shaderProgram.disableAttributeArray("color");
 
+    //координаты точек линий для координатных осей, а так же их цвета
+    //x - красная линия, y - зеленая линия, z - синяя
     float lineXVert[2][3] = {{-2, 0, 0}, {2, 0, 0}};
     float lineXColor[2][3] = {{1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}};
     float lineYVert[2][3] = {{0, 2, 0}, {0, -2, 0}};
@@ -317,7 +327,6 @@ void PlaneAndAxis::draw(QGLShaderProgram &shaderProgram, bool isActive) {
     shaderProgram.enableAttributeArray("vertex");
     shaderProgram.setAttributeArray("color", (float*)lineXColor, 3);
     shaderProgram.enableAttributeArray("color");
-    glLineWidth(2);
     glDrawArrays(GL_LINES, 0, 2);
     shaderProgram.disableAttributeArray("vertex");
     shaderProgram.disableAttributeArray("color");
@@ -326,7 +335,6 @@ void PlaneAndAxis::draw(QGLShaderProgram &shaderProgram, bool isActive) {
     shaderProgram.enableAttributeArray("vertex");
     shaderProgram.setAttributeArray("color", (float*)lineYColor, 3);
     shaderProgram.enableAttributeArray("color");
-    glLineWidth(2);
     glDrawArrays(GL_LINES, 0, 2);
     shaderProgram.disableAttributeArray("vertex");
     shaderProgram.disableAttributeArray("color");
@@ -335,7 +343,6 @@ void PlaneAndAxis::draw(QGLShaderProgram &shaderProgram, bool isActive) {
     shaderProgram.enableAttributeArray("vertex");
     shaderProgram.setAttributeArray("color", (float*)lineZColor, 3);
     shaderProgram.enableAttributeArray("color");
-    glLineWidth(2);
     glDrawArrays(GL_LINES, 0, 2);
     shaderProgram.disableAttributeArray("vertex");
     shaderProgram.disableAttributeArray("color");
