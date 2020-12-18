@@ -22,7 +22,7 @@ public:
     readObj() {};
     readObj(QString fName);
     void readFile();
-    void getVertexAndFaces(float vertex[][3], GLushort faces[]);	//получить данные об объекте, для его послед. отрисовки
+    void getVertexAndFaces(float vertex[][3], float normals[][3]);	//получить данные об объекте, для его послед. отрисовки
     void printPoints();
 };
 

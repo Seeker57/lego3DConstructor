@@ -103,51 +103,117 @@ bool Brick::isCrossWithSL(QVector3D currentFaces[], QVector3D sRayBegin, QVector
     return true;
 }
 
-void Brick::draw(QGLShaderProgram &shaderProgram, bool isActive) {
+void Brick::setLighting(QGLShaderProgram& shaderProgram, LightInfo lights[]) {
+
+    for (int i = 0; i < 3; i++)
+        lights[i].object = QVector3D(lights[i].object.x() / (255.0 * 4),
+                                     lights[i].object.y() / (255.0 * 4),
+                                     lights[i].object.z() / (255.0 * 4));
+
+    QVector3D curPos;
+
+    if (lights[0].isOn) {
+        curPos = lights[0].pos;
+        curPos = rotateMatrix * curPos;
+        curPos.setZ(-deepOffset);
+        shaderProgram.setUniformValue("lights[0].ambientColor", lights[0].ambient);
+        shaderProgram.setUniformValue("lights[0].diffuseColor", lights[0].diffuse);
+        shaderProgram.setUniformValue("lights[0].objectColor", lights[0].object);
+        shaderProgram.setUniformValue("lights[0].pos", curPos);
+    }
+    else {
+        curPos = lights[0].pos;
+        curPos = rotateMatrix * curPos;
+        curPos.setZ(-deepOffset);
+        shaderProgram.setUniformValue("lights[0].ambientColor", QVector3D(0.0, 0.0, 0.0));
+        shaderProgram.setUniformValue("lights[0].diffuseColor", QVector3D(0.0, 0.0, 0.0));
+        shaderProgram.setUniformValue("lights[0].objectColor", QVector3D(0.0, 0.0, 0.0));
+        shaderProgram.setUniformValue("lights[0].pos", curPos);
+    }
+
+    if (lights[1].isOn) {
+        curPos = lights[1].pos;
+        curPos = rotateMatrix * curPos;
+        curPos.setZ(-deepOffset);
+        shaderProgram.setUniformValue("lights[1].ambientColor", lights[1].ambient);
+        shaderProgram.setUniformValue("lights[1].diffuseColor", lights[1].diffuse);
+        shaderProgram.setUniformValue("lights[1].objectColor", lights[1].object);
+        shaderProgram.setUniformValue("lights[1].pos", curPos);
+    }
+    else {
+        curPos = lights[1].pos;
+        curPos = rotateMatrix * curPos;
+        curPos.setZ(-deepOffset);
+        shaderProgram.setUniformValue("lights[1].ambientColor", QVector3D(0.0, 0.0, 0.0));
+        shaderProgram.setUniformValue("lights[1].diffuseColor", QVector3D(0.0, 0.0, 0.0));
+        shaderProgram.setUniformValue("lights[1].objectColor", QVector3D(0.0, 0.0, 0.0));
+        shaderProgram.setUniformValue("lights[1].pos", curPos);
+    }
+
+    if (lights[2].isOn) {
+        curPos = lights[2].pos;
+        curPos = rotateMatrix * curPos;
+        curPos.setZ(-deepOffset);
+        shaderProgram.setUniformValue("lights[2].ambientColor", lights[2].ambient);
+        shaderProgram.setUniformValue("lights[2].diffuseColor", lights[2].diffuse);
+        shaderProgram.setUniformValue("lights[2].objectColor", lights[2].object);
+        shaderProgram.setUniformValue("lights[2].pos", curPos);
+    }
+    else {
+        curPos = lights[1].pos;
+        curPos = rotateMatrix * curPos;
+        curPos.setZ(-deepOffset);
+        shaderProgram.setUniformValue("lights[2].ambientColor", QVector3D(0.0, 0.0, 0.0));
+        shaderProgram.setUniformValue("lights[2].diffuseColor", QVector3D(0.0, 0.0, 0.0));
+        shaderProgram.setUniformValue("lights[2].objectColor", QVector3D(0.0, 0.0, 0.0));
+        shaderProgram.setUniformValue("lights[2].pos", curPos);
+    }
+}
+
+void Brick::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInfo lights[]) {
 
     srand(100);
-
-    // Массив цветов для каждой вершины
-    float colors[model.points.size()][3];
 
     //выбираем диапазон цветов, если объект выбран, то более яркие, если нет, то более темные
     float colorRange;
     if (isActive)
-        colorRange = 100;
+        colorRange = 1;
     else
-        colorRange = 200;
+        colorRange = 2;
 
-    for (int i = 0; i < model.points.size(); i++) {
+    QColor brickColor = QColor(255 / colorRange, 157 / colorRange, 87 / colorRange);
+    for (int i = 0; i < 3; i++)
+        lights[i].object = QVector3D(brickColor.red(), brickColor.green(), brickColor.blue());
 
-        colors[i][0] = (rand() % 100) / colorRange;
-        colors[i][1] = (rand() % 100) / colorRange;
-        colors[i][2] = (rand() % 100) / colorRange;
-    }
-
-    float vertices[model.points.size()][3];		//массив точек модели
-    GLushort indeces[model.faces.size() * 3];	//массив граней, которые представляют собой индексы в массике точек
-    getModels(vertices, indeces);				//получаем массив точек и граней по считанной модели
+    float vertices[model.faces.size() * 3][3];	//массив точек модели
+    float normals[model.faces.size() * 3][3];	//массив нормалей к вершинам
+    getModels(vertices, normals);		//получаем массив точек, нормалей и граней по считанной модели
 
     shaderProgram.bind();
 
-    // Зададим матрицу, на которую будут умножены однородные координаты вершин в вершинном шейдере
-    shaderProgram.setUniformValue("matrix", projectMatrix * modelViewMatrix);
+    setLighting(shaderProgram, lights);
+
+    // Зададим матрицы для вершинного шейдера
+    shaderProgram.setUniformValue("matrix", projectMatrix * modelViewMatrix);		//матрица на которую будут умножаться координаты
+    shaderProgram.setUniformValue("normalMatrix", modelViewMatrix.normalMatrix());	//матрица для пересчёта векторов нормалей
+    shaderProgram.setUniformValue("modelViewMatrix", modelViewMatrix);				//видовая матрица для расчёта освещения
+    shaderProgram.setUniformValue("color", brickColor);
 
     // Передадим шейдеру весь массив вершин
     // Третий параметр равен трем, потому что одна вершина квадрата задана в массиве vertices тремя числами
     shaderProgram.setAttributeArray("vertex", (float*)vertices, 3);
     shaderProgram.enableAttributeArray("vertex");
 
-    // Передаём массив цветов каждой вершины (цвет каждой вершины задаётся тремя числами)
-    shaderProgram.setAttributeArray("color", (float*)colors, 3);
-    shaderProgram.enableAttributeArray("color");
+    // Передаем шейдеру весь массив нормалей
+    shaderProgram.setAttributeArray("normal", (float*)normals, 3);
+    shaderProgram.enableAttributeArray("normal");
 
     // Рисование примитива по координатам, заданным в массиве
     // Второй параметр означает, что модель состоит из model.faces.size() граней, каждая из которых содержит 3 точки
-    glDrawElements(GL_TRIANGLES, 3 * model.faces.size(), GL_UNSIGNED_SHORT, indeces);
+    glDrawArrays(GL_TRIANGLES, 0, model.faces.size() * 3);
 
     shaderProgram.disableAttributeArray("vertex");
-    shaderProgram.disableAttributeArray("color");
+    shaderProgram.disableAttributeArray("normal");
     shaderProgram.release();
 }
 
@@ -159,50 +225,53 @@ MyModel::MyModel(float deepOf, QMatrix4x4 R) : Brick() {
     resetModelView();
 }
 
-void MyModel::draw(QGLShaderProgram &shaderProgram, bool isActive) {
+void MyModel::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInfo lights[]) {
 
     Model myModel(20);
 
     srand(100);
-    // Массив цветов для каждой вершины
-    float colors[myModel.howPolygons() * 3][3];
 
+    //выбираем диапазон цветов, если объект выбран, то более яркие, если нет, то более темные
     float colorRange;
     if (isActive)
-        colorRange = 100;
+        colorRange = 1;
     else
-        colorRange = 200;
+        colorRange = 2;
 
-    for (int i = 0; i < myModel.howPolygons() * 3; i++) {
-
-        colors[i][0] = (rand() % 100) / colorRange;
-        colors[i][1] = (rand() % 100) / colorRange;
-        colors[i][2] = (rand() % 100) / colorRange;
-    }
+    QColor brickColor = QColor(255 / colorRange, 157 / colorRange, 87 / colorRange);
+    for (int i = 0; i < 3; i++)
+        lights[i].object = QVector3D(brickColor.red(), brickColor.green(), brickColor.blue());
 
     float vertices[myModel.howPolygons() * 3][3];		//массив точек модели
-    myModel.getStaticModel(vertices);
+    float normals[myModel.howPolygons() * 3][3];		//массив точек модели
+
+    myModel.getStaticModel(vertices, normals);
 
     shaderProgram.bind();
 
-    // Зададим матрицу, на которую будут умножены однородные координаты вершин в вершинном шейдере
-    shaderProgram.setUniformValue("matrix", projectMatrix * modelViewMatrix);
+    setLighting(shaderProgram, lights);
+
+    // Зададим матрицы для вершинного шейдера
+    shaderProgram.setUniformValue("matrix", projectMatrix * modelViewMatrix);		//матрица на которую будут умножаться координаты
+    shaderProgram.setUniformValue("normalMatrix", modelViewMatrix.normalMatrix());	//матрица для пересчёта векторов нормалей
+    shaderProgram.setUniformValue("modelViewMatrix", modelViewMatrix);				//видовая матрица для расчёта освещения
+    shaderProgram.setUniformValue("color", brickColor);
 
     // Передадим шейдеру весь массив вершин
     // Третий параметр равен трем, потому что одна вершина квадрата задана в массиве vertices тремя числами
     shaderProgram.setAttributeArray("vertex", (float*)vertices, 3);
     shaderProgram.enableAttributeArray("vertex");
 
-    // Передаём массив цветов каждой вершины (цвет каждой вершины задаётся тремя числами)
-    shaderProgram.setAttributeArray("color", (float*)colors, 3);
-    shaderProgram.enableAttributeArray("color");
+    // Передаем шейдеру весь массив нормалей
+    shaderProgram.setAttributeArray("normal", (float*)normals, 3);
+    shaderProgram.enableAttributeArray("normal");
 
     // Рисование примитива по координатам, заданным в массиве
     // Второй параметр означает, что модель состоит из model.faces.size() граней, каждая из которых содержит 3 точки
     glDrawArrays(GL_TRIANGLES, 0, myModel.howPolygons() * 3);
 
     shaderProgram.disableAttributeArray("vertex");
-    shaderProgram.disableAttributeArray("color");
+    shaderProgram.disableAttributeArray("normal");
     shaderProgram.release();
 }
 
@@ -241,7 +310,7 @@ PlaneAndAxis::PlaneAndAxis(float deepOf, QMatrix4x4 R) : Brick() {
     resetModelView();
 }
 
-void PlaneAndAxis::draw(QGLShaderProgram &shaderProgram, bool isActive) {
+void PlaneAndAxis::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInfo lights[]) {
 
     float vertices[44 * 2][3];		//массив точек модели
     GLushort indeces[44 * 2];		//массив граней, которые представляют собой индексы в массике точек
@@ -283,69 +352,46 @@ void PlaneAndAxis::draw(QGLShaderProgram &shaderProgram, bool isActive) {
         indeces[i + 3] = i + 3;
     }
 
-    // Массив цветов для каждой вершины
-    float colors[44 * 2][3];
-
-    for (int i = 0; i < 44 * 2; i++) {
-
-        colors[i][0] = 0.3f;
-        colors[i][1] = 0.3f;
-        colors[i][2] = 0.3f;
-    }
-
     shaderProgram.bind();
 
     // Зададим матрицу, на которую будут умножены однородные координаты вершин в вершинном шейдере
     shaderProgram.setUniformValue("matrix", projectMatrix * modelViewMatrix);
+    shaderProgram.setUniformValue("color", QColor(77, 77, 77));
 
     // Передадим шейдеру весь массив вершин
     // Третий параметр равен трем, потому что одна вершина квадрата задана в массиве vertices тремя числами
     shaderProgram.setAttributeArray("vertex", (float*)vertices, 3);
     shaderProgram.enableAttributeArray("vertex");
 
-    // Передаём массив цветов каждой вершины (цвет каждой вершины задаётся тремя числами)
-    shaderProgram.setAttributeArray("color", (float*)colors, 3);
-    shaderProgram.enableAttributeArray("color");
-
     // Рисование примитива по координатам, заданным в массиве
     // Второй параметр означает, что модель состоит из model.faces.size() граней, каждая из которых содержит 3 точки
     glDrawElements(GL_LINES, 2 * 44, GL_UNSIGNED_SHORT, indeces);
 
     shaderProgram.disableAttributeArray("vertex");
-    shaderProgram.disableAttributeArray("color");
 
     //координаты точек линий для координатных осей, а так же их цвета
     //x - красная линия, y - зеленая линия, z - синяя
     float lineXVert[2][3] = {{-2, 0, 0}, {2, 0, 0}};
-    float lineXColor[2][3] = {{1.0, 0.0, 0.0}, {1.0, 0.0, 0.0}};
     float lineYVert[2][3] = {{0, 2, 0}, {0, -2, 0}};
-    float lineYColor[2][3] = {{0.0, 1.0, 0.0}, {0.0, 1.0, 0.0}};
     float lineZVert[2][3] = {{0, 0, 0}, {0, 0, -2}};
-    float lineZColor[2][3] = {{0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}};
 
+    shaderProgram.setUniformValue("color", QColor(150, 0, 0));
     shaderProgram.setAttributeArray("vertex", (float*)lineXVert, 3);
     shaderProgram.enableAttributeArray("vertex");
-    shaderProgram.setAttributeArray("color", (float*)lineXColor, 3);
-    shaderProgram.enableAttributeArray("color");
     glDrawArrays(GL_LINES, 0, 2);
     shaderProgram.disableAttributeArray("vertex");
-    shaderProgram.disableAttributeArray("color");
 
+    shaderProgram.setUniformValue("color", QColor(0, 255, 0));
     shaderProgram.setAttributeArray("vertex", (float*)lineYVert, 3);
     shaderProgram.enableAttributeArray("vertex");
-    shaderProgram.setAttributeArray("color", (float*)lineYColor, 3);
-    shaderProgram.enableAttributeArray("color");
     glDrawArrays(GL_LINES, 0, 2);
     shaderProgram.disableAttributeArray("vertex");
-    shaderProgram.disableAttributeArray("color");
 
+    shaderProgram.setUniformValue("color", QColor(0, 0, 255));
     shaderProgram.setAttributeArray("vertex", (float*)lineZVert, 3);
     shaderProgram.enableAttributeArray("vertex");
-    shaderProgram.setAttributeArray("color", (float*)lineZColor, 3);
-    shaderProgram.enableAttributeArray("color");
     glDrawArrays(GL_LINES, 0, 2);
     shaderProgram.disableAttributeArray("vertex");
-    shaderProgram.disableAttributeArray("color");
 
     shaderProgram.release();
 }

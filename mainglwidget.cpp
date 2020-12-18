@@ -5,6 +5,25 @@ MainGLWidget::MainGLWidget(QWidget *parent) : QGLWidget(parent), plane(1.3, rota
 
     rotateMatrix.setToIdentity();
     rotateMatrix.rotate(-10, 1, 0, 0);
+
+    //1-ый направленный источник освещения
+    lights[0].pos = QVector3D(5.0, 3.0, 0.0);
+    lights[0].ambient = QVector3D(0.0, 0.0, 0.0);
+    lights[0].diffuse = QVector3D(0.98, 0.92, 0.84);
+    lights[0].isOn = true;
+
+    //2-ой направленный источник освещения
+    lights[1].pos = QVector3D(0.0, -5.0, 0.0);
+    lights[1].ambient = QVector3D(0.0, 0.0, 0.0);
+    lights[1].diffuse =  QVector3D(0.61, 0.94, 0.91);
+    lights[1].isOn = true;
+
+    //3-ий точечный источник освещения
+    lights[2].pos = QVector3D(0.0, 0.0, 0.0);
+    lights[2].ambient = QVector3D(0.0, 0.0, 0.0);
+    lights[2].diffuse = QVector3D(1.0, 1.0, 0.0);
+    lights[2].isOn = true;
+
     plane.setRotateMatrix(rotateMatrix);
     plane.resetModelView();
 }
@@ -13,6 +32,7 @@ void MainGLWidget::initializeGL() {
 
     // Включение буфера глубины
     glEnable(GL_DEPTH_TEST);
+    // Режим рисования только лицевых граней
 
     // Фоновый цвет
     qglClearColor(QColor(Qt::black));
@@ -52,12 +72,12 @@ void MainGLWidget::paintGL() {
     for (int i = 0; i < bricks.size(); i++) {
 
         if (activeBrick == i)
-            bricks[i]->draw(shaderProgram, true);
+            bricks[i]->draw(shaderProgram, true, lights);
         else
-            bricks[i]->draw(shaderProgram, false);
+            bricks[i]->draw(shaderProgram, false, lights);
     }
 
-    plane.draw(shaderProgram, false);
+    plane.draw(shaderProgram, false, lights);
     textOut();
 }
 
@@ -125,25 +145,39 @@ void MainGLWidget::mousePressEvent(QMouseEvent* m_event) {
 }
 
 
+QVector3D MainGLWidget::myUnProject(QVector3D point) {
+
+    QMatrix4x4 modelViewMatrix;
+    modelViewMatrix.setToIdentity();
+    QVector4D viewport(0, 0, width(), height());
+
+    QVector4D transformPoint;
+    transformPoint.setX((point.x() - viewport.x()) / (float)viewport.z() * 2.0 - 1.0);
+    transformPoint.setY((point.y() - viewport.y()) / (float)viewport.w() * 2.0 - 1.0);
+    transformPoint.setZ(2.0 * point.z() - 1.0);
+    transformPoint.setW(1.0);
+
+    QVector4D resultPoint = transformPoint * modelViewMatrix;
+
+    resultPoint.setW(1.0 / resultPoint.w());
+    resultPoint.setX(resultPoint.x() * resultPoint.w());
+    resultPoint.setY(resultPoint.y() * resultPoint.w());
+    resultPoint.setZ(resultPoint.z() * resultPoint.w());
+
+    return QVector3D(resultPoint.x(), resultPoint.y(), resultPoint.z());
+}
+
+
 void MainGLWidget::getWorldPos(QPoint screenPos) {
 
-    GLint viewport[4];
-    GLdouble mvm[16];
-    GLdouble projm[16];
-    GLdouble wx, wy, wz;
-
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    glGetDoublev(GL_MODELVIEW_MATRIX, mvm);
-    glGetDoublev(GL_PROJECTION_MATRIX, projm);
-
     float x = screenPos.x();
-    float y = height() - screenPos.y() - 1;
+    float y = height() - screenPos.y()- 1;
 
-    gluUnProject(x, y, -1.0f, mvm, projm, viewport, &wx, &wy, &wz);
-    sRayBegin = QVector3D(wx, wy, wz);
+    QVector3D start(x, y, -1.0f);
+    QVector3D end(x, y, 1.0f);
 
-    gluUnProject(x, y, 1.0f, mvm, projm, viewport, &wx, &wy, &wz);
-    sRayEnd = QVector3D(wx, wy, wz);
+    sRayBegin = myUnProject(start);
+    sRayEnd = myUnProject(end);
 }
 
 
@@ -195,9 +229,25 @@ void MainGLWidget::addMyModel() {
     updateGL();
 }
 
+void MainGLWidget::setLight1(bool flag) {
+    lights[0].isOn = !flag;
+    updateGL();
+}
+
+void MainGLWidget::setLight2(bool flag) {
+    lights[1].isOn = !flag;
+    updateGL();
+}
+
+void MainGLWidget::setLight3(bool flag) {
+    lights[2].isOn = !flag;
+    updateGL();
+}
+
 MainGLWidget::~MainGLWidget() {
 
     for (int i = 0; i < bricks.size(); i++)
         delete bricks[i];
 }
+
 

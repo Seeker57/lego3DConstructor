@@ -33,6 +33,10 @@ public:
     void setShiftZPos() { if (activeBrick != -1) { bricks[activeBrick]->setShiftZPos(); updateGL(); } };
     void setShiftZNeg() { if (activeBrick != -1) { bricks[activeBrick]->setShiftZNeg(); updateGL(); } };
 
+    void setLight1(bool flag);
+    void setLight2(bool flag);
+    void setLight3(bool flag);
+
     void addBrick(QString fileName);	//добавить на сцену блок, содержащийся в файле fileName.obj
     void addMyModel();					//Добавить на сцену модель из 5 ЛР
     void deleteActiveBrick() { if (activeBrick != -1) { bricks.removeAt(activeBrick); activeBrick = -1; updateGL(); } };	//удалить выбранный блок
@@ -44,6 +48,7 @@ private:
     int activeBrick;								// позиция выбранного объекта в векторе объектов
     float deepOffset;								// значений глубины для всей сцены
     QMatrix4x4 rotateMatrix; 						// матрица поворота для всей сцены
+    LightInfo lights[3];
 
     QPointF mousePosition;							// позиция указателя мыши
     QVector3D sRayBegin;							// точка начала селект. луча
@@ -54,6 +59,7 @@ private:
     void changeRotateMatrix(float dx, float dy);	// Процедура для изменения матрицы поворота
     void getWorldPos(QPoint screenPos);				// Процедура для определения мировых координат селект. луча в зависимости от позиции мыши на экране
     void setActiveBrick();							// Процедура выбора активного объекта в зависимости от перемечения с селект. лучом
+    QVector3D myUnProject(QVector3D point);			// реализация собственной ф-ции gluUnProject
 
     void initializeGL();
     void resizeGL(int nWidth, int nHeight);

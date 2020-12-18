@@ -16,6 +16,15 @@ const float VALUE_TURN_X = 0.0832;
 const float VALUE_TURN_Y = 0.0832;
 const float VALUE_TURN_Z = 0.0532;
 
+struct LightInfo {
+
+    QVector3D ambient;
+    QVector3D diffuse;
+    QVector3D object;
+    QVector3D pos;
+    bool isOn;
+};
+
 /*Класс Блок, который является основным объектом для отрисовки на сцене, имеет виртуальные функции: отрисовки, изменения modelView,
 а так же определения пересечения с селект. лучом, вледстсвие чего можно наследоваться от этого класса для реализации различных обеъектов*/
 class Brick
@@ -40,12 +49,13 @@ protected:
     QMatrix4x4 projectMatrix;		// Матрица проектирования
 
     int sgn(const float& k);		//ф-ция определения знака числа (для нахождения пересечений граней блока с селект. лучом
+    void setLighting(QGLShaderProgram& shaderProgram, LightInfo lights[]);
 
 public:
     Brick() {};
     Brick(QString fileName, float deepOf, QMatrix4x4 R);
     int howPoints() { return model.points.size(); };  //возвр. кол-во точек объекта
-    void getModels(float vertex[][3], GLushort faces[]) { model.getVertexAndFaces(vertex, faces); }; //получить точки объекта и координаты его граней
+    void getModels(float vertex[][3], float normals[][3]) { model.getVertexAndFaces(vertex, normals); }; //получить точки объекта и координаты его граней
     void getWindowSize(int w, int h) { height = h, width = w; }; //установить ширину и высоту окна, на котором будет производиться отрисовка
 
     //ф-ции для движения объекта по осям
@@ -72,7 +82,7 @@ public:
     void resetProjection();		        // Процедура для изменения матрицы проектирования
     virtual void resetModelView();		// Процедура для изменения видовой матрицы
 
-    virtual void draw(QGLShaderProgram& shaderProgram, bool isActive); //ф-ция отрисовки Блока
+    virtual void draw(QGLShaderProgram& shaderProgram, bool isActive, LightInfo lights[]); //ф-ция отрисовки Блока
 };
 
 //Класс модели, использовавшейся в 5 ЛР
@@ -80,7 +90,7 @@ class MyModel : public Brick {
 
 public:
     MyModel(float deepOf, QMatrix4x4 R);
-    void draw(QGLShaderProgram& shaderProgram, bool isActive) override;
+    void draw(QGLShaderProgram& shaderProgram, bool isActive, LightInfo lights[]) override;
     bool pointInBrick(QVector3D worldPos1, QVector3D worldPos2, float& minDepth) override;
 };
 
@@ -89,7 +99,7 @@ class PlaneAndAxis : public Brick {
 
 public:
     PlaneAndAxis(float deepOf, QMatrix4x4 R);
-    void draw(QGLShaderProgram& shaderProgram, bool isActive) override;
+    void draw(QGLShaderProgram& shaderProgram, bool isActive, LightInfo lights[]) override;
     void resetModelView() override;
 };
 

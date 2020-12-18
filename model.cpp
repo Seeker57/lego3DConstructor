@@ -576,7 +576,7 @@ void Model::sortMyPolygons() {
     sort(indexMyPolygons.begin(), indexMyPolygons.end(), compFunc);
 }
 
-void Model::getStaticModel(float vertex[][3]) {
+void Model::getStaticModel(float vertex[][3], float normals[][3]) {
 
     int i = 0;
     for (auto face : polygons) {
@@ -592,6 +592,25 @@ void Model::getStaticModel(float vertex[][3]) {
         vertex[i*3 + 2][0] = face[2].x();
         vertex[i*3 + 2][1] = face[2].y();
         vertex[i*3 + 2][2] = face[2].z();
+
+        QVector3D currentFaces[3];
+        currentFaces[0] = QVector3D(face[0].x(), face[0].y(), face[0].z());
+        currentFaces[1] = QVector3D(face[1].x(), face[1].y(), face[1].z());
+        currentFaces[2] = QVector3D(face[2].x(), face[2].y(), face[2].z());
+
+        QVector3D normal = QVector3D::normal(currentFaces[0], currentFaces[1], currentFaces[2]);
+        normals[i*3][0] = normal.x();
+        normals[i*3][1] = normal.y();
+        normals[i*3][2] = normal.z();
+
+        normals[i*3 + 1][0] = normal.x();
+        normals[i*3 + 1][1] = normal.y();
+        normals[i*3 + 1][2] = normal.z();
+
+        normals[i*3 + 2][0] = normal.x();
+        normals[i*3 + 2][1] = normal.y();
+        normals[i*3 + 2][2] = normal.z();
+
         i++;
     }
 }

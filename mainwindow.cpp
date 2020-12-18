@@ -129,3 +129,18 @@ void MainWindow::on_pushButton_4_clicked() {
 
     ui->openGLWidget->deleteActiveBrick();
 }
+
+void MainWindow::on_checkBox_stateChanged(int arg1) {
+
+    ui->openGLWidget->setLight1(ui->checkBox->isChecked());
+}
+
+void MainWindow::on_checkBox_2_stateChanged(int arg1) {
+
+    ui->openGLWidget->setLight2(ui->checkBox_2->isChecked());
+}
+
+void MainWindow::on_checkBox_3_stateChanged(int arg1) {
+
+    ui->openGLWidget->setLight3(ui->checkBox_3->isChecked());
+}

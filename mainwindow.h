@@ -39,6 +39,12 @@ private slots:
     void on_shiftZPos_clicked();
     void on_shiftZNeg_clicked();
 
+    void on_checkBox_stateChanged(int arg1);
+
+    void on_checkBox_2_stateChanged(int arg1);
+
+    void on_checkBox_3_stateChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
 

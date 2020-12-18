@@ -55,19 +55,38 @@ void readObj::printPoints() {
     }
 }
 
-void readObj::getVertexAndFaces(float vertex[][3], GLushort face[]) {
-
-    for (int i = 0; i < points.size(); i++) {
-
-        vertex[i][0] = points[i].x();
-        vertex[i][1] = points[i].y();
-        vertex[i][2] = points[i].z();
-    }
+void readObj::getVertexAndFaces(float vertex[][3], float normals[][3]) {
 
     for (int i = 0; i < faces.size(); i++) {
 
-        face[i*3] = faces[i][0];
-        face[i*3 + 1] = faces[i][1];
-        face[i*3 + 2] = faces[i][2];
+        vertex[i*3][0] = points[faces[i][0]].x();
+        vertex[i*3][1] = points[faces[i][0]].y();
+        vertex[i*3][2] = points[faces[i][0]].z();
+
+        vertex[i*3 + 1][0] = points[faces[i][1]].x();
+        vertex[i*3 + 1][1] = points[faces[i][1]].y();
+        vertex[i*3 + 1][2] = points[faces[i][1]].z();
+
+        vertex[i*3 + 2][0] = points[faces[i][2]].x();
+        vertex[i*3 + 2][1] = points[faces[i][2]].y();
+        vertex[i*3 + 2][2] = points[faces[i][2]].z();
+
+        QVector3D currentFaces[3];
+        currentFaces[0] = QVector3D(points[faces[i][0]].x(), points[faces[i][0]].y(), points[faces[i][0]].z());
+        currentFaces[1] = QVector3D(points[faces[i][1]].x(), points[faces[i][1]].y(), points[faces[i][1]].z());
+        currentFaces[2] = QVector3D(points[faces[i][2]].x(), points[faces[i][2]].y(), points[faces[i][2]].z());
+
+        QVector3D normal = QVector3D::normal(currentFaces[0], currentFaces[1], currentFaces[2]);
+        normals[i*3][0] = normal.x();
+        normals[i*3][1] = normal.y();
+        normals[i*3][2] = normal.z();
+
+        normals[i*3 + 1][0] = normal.x();
+        normals[i*3 + 1][1] = normal.y();
+        normals[i*3 + 1][2] = normal.z();
+
+        normals[i*3 + 2][0] = normal.x();
+        normals[i*3 + 2][1] = normal.y();
+        normals[i*3 + 2][2] = normal.z();
     }
 }
