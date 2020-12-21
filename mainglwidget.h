@@ -6,11 +6,13 @@
 #include <QGLShaderProgram>
 #include <QOpenGLWidget>
 #include <gl/glu.h>
+#include <QImage>
+#include <QOpenGLFunctions_4_4_Core>
 #include "brick.h"
 
 const int CAMERA_SPEED = 3;
 
-class MainGLWidget : public QGLWidget
+class MainGLWidget : public QGLWidget, protected QOpenGLFunctions_4_4_Core
 {
     Q_OBJECT
 public:
@@ -48,7 +50,8 @@ private:
     int activeBrick;								// позиция выбранного объекта в векторе объектов
     float deepOffset;								// значений глубины для всей сцены
     QMatrix4x4 rotateMatrix; 						// матрица поворота для всей сцены
-    LightInfo lights[3];
+    LightInfo lights[3];							// массив информации об источниках света
+    GLuint tid[2];									// UID текстур
 
     QPointF mousePosition;							// позиция указателя мыши
     QVector3D sRayBegin;							// точка начала селект. луча

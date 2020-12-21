@@ -87,7 +87,7 @@ public:
     void sortMyPolygons();
     void calcZBuffer();
     bool isSelectedFace(QPolygonF polygon, QPointF lastPoint);
-    void getStaticModel(float vertex[][3], float normals[][3]);
+    void getStaticModel(float vertex[][3], float normals[][3], float texCoords[][2]);
 };
 
 #endif // MODEL_H

@@ -1,7 +1,7 @@
 #include "mainglwidget.h"
 
-MainGLWidget::MainGLWidget(QWidget *parent) : QGLWidget(parent), plane(1.3, rotateMatrix),
-    activeBrick(-1), deepOffset(1.3), shaderProgram(this) {
+MainGLWidget::MainGLWidget(QWidget *parent) : QGLWidget(QGLFormat(), parent), plane(2.3, rotateMatrix),
+    activeBrick(-1), deepOffset(2.3), shaderProgram(this) {
 
     rotateMatrix.setToIdentity();
     rotateMatrix.rotate(-10, 1, 0, 0);
@@ -21,7 +21,7 @@ MainGLWidget::MainGLWidget(QWidget *parent) : QGLWidget(parent), plane(1.3, rota
     //3-ий точечный источник освещения
     lights[2].pos = QVector3D(0.0, 0.0, 0.0);
     lights[2].ambient = QVector3D(0.0, 0.0, 0.0);
-    lights[2].diffuse = QVector3D(1.0, 1.0, 0.0);
+    lights[2].diffuse = QVector3D(0.41, 1.0, 0.98);
     lights[2].isOn = true;
 
     plane.setRotateMatrix(rotateMatrix);
@@ -30,8 +30,11 @@ MainGLWidget::MainGLWidget(QWidget *parent) : QGLWidget(parent), plane(1.3, rota
 
 void MainGLWidget::initializeGL() {
 
+    initializeOpenGLFunctions();
+
     // Включение буфера глубины
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
     // Режим рисования только лицевых граней
 
     // Фоновый цвет
@@ -48,6 +51,29 @@ void MainGLWidget::initializeGL() {
     // Сборка шейдеров
     if(shaderProgram.link() == false)
       qDebug() << shaderProgram.log();
+
+    //загружаем текстуру для блока
+    QImage texture;
+    texture.load(":/images/icons/block_texture4.tif");
+    texture = QGLWidget::convertToGLFormat(texture);
+
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(2, tid);
+    glBindTexture(GL_TEXTURE_2D, tid[0]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, GLsizei(texture.width()), GLsizei(texture.height()), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+    //загружаем текстуру для плоскости
+    texture.load(":/images/icons/planeTex.tif");
+    texture = QGLWidget::convertToGLFormat(texture);
+
+    glBindTexture(GL_TEXTURE_2D, tid[1]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, GLsizei(texture.width()), GLsizei(texture.height()), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
 
 void MainGLWidget::resizeGL(int nWidth, int nHeight) {
@@ -72,12 +98,12 @@ void MainGLWidget::paintGL() {
     for (int i = 0; i < bricks.size(); i++) {
 
         if (activeBrick == i)
-            bricks[i]->draw(shaderProgram, true, lights);
+            bricks[i]->draw(shaderProgram, true, lights, tid[0]);
         else
-            bricks[i]->draw(shaderProgram, false, lights);
+            bricks[i]->draw(shaderProgram, false, lights, tid[0]);
     }
 
-    plane.draw(shaderProgram, false, lights);
+    plane.draw(shaderProgram, false, lights, tid[1]);
     textOut();
 }
 

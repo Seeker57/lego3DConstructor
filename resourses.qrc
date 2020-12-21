@@ -21,5 +21,9 @@
         <file>icons/delete.png</file>
         <file>icons/2x2B.png</file>
         <file>icons/2x2L.png</file>
+        <file>icons/block_texture2.tif</file>
+        <file>icons/planeTex.tif</file>
+        <file>icons/block_texture3.tif</file>
+        <file>icons/block_texture4.tif</file>
     </qresource>
 </RCC>

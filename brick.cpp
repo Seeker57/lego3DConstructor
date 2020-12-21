@@ -18,7 +18,6 @@ void Brick::resetProjection()
 }
 
 
-
 // Процедура для изменения видовой матрицы
 void Brick::resetModelView()
 {
@@ -170,7 +169,7 @@ void Brick::setLighting(QGLShaderProgram& shaderProgram, LightInfo lights[]) {
     }
 }
 
-void Brick::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInfo lights[]) {
+void Brick::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInfo lights[], GLuint tid) {
 
     srand(100);
 
@@ -179,18 +178,20 @@ void Brick::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInfo light
     if (isActive)
         colorRange = 1;
     else
-        colorRange = 2;
+        colorRange = 1.5;
 
-    QColor brickColor = QColor(255 / colorRange, 157 / colorRange, 87 / colorRange);
+    QColor brickColor = QColor(214 / colorRange, 255 / colorRange, 250 / colorRange);
     for (int i = 0; i < 3; i++)
         lights[i].object = QVector3D(brickColor.red(), brickColor.green(), brickColor.blue());
 
-    float vertices[model.faces.size() * 3][3];	//массив точек модели
-    float normals[model.faces.size() * 3][3];	//массив нормалей к вершинам
-    getModels(vertices, normals);		//получаем массив точек, нормалей и граней по считанной модели
+    float vertices[model.faces.size() * 3][3];		//массив точек модели
+    float normals[model.faces.size() * 3][3];		//массив нормалей к вершинам
+    float texturePos[model.faces.size() * 3][2];	//массив текстурных координат
+    getModels(vertices, normals, texturePos);		//получаем массив точек, нормалей и граней по считанной модели
 
     shaderProgram.bind();
 
+    glBindTexture(GL_TEXTURE_2D, tid);
     setLighting(shaderProgram, lights);
 
     // Зададим матрицы для вершинного шейдера
@@ -208,12 +209,17 @@ void Brick::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInfo light
     shaderProgram.setAttributeArray("normal", (float*)normals, 3);
     shaderProgram.enableAttributeArray("normal");
 
+    // Передаем шейдеру весь массив текстурных координат
+    shaderProgram.setAttributeArray("texture", (float*)texturePos, 2);
+    shaderProgram.enableAttributeArray("texture");
+
     // Рисование примитива по координатам, заданным в массиве
     // Второй параметр означает, что модель состоит из model.faces.size() граней, каждая из которых содержит 3 точки
     glDrawArrays(GL_TRIANGLES, 0, model.faces.size() * 3);
 
     shaderProgram.disableAttributeArray("vertex");
     shaderProgram.disableAttributeArray("normal");
+    shaderProgram.disableAttributeArray("texture");
     shaderProgram.release();
 }
 
@@ -225,7 +231,7 @@ MyModel::MyModel(float deepOf, QMatrix4x4 R) : Brick() {
     resetModelView();
 }
 
-void MyModel::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInfo lights[]) {
+void MyModel::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInfo lights[], GLuint tid) {
 
     Model myModel(20);
 
@@ -236,19 +242,21 @@ void MyModel::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInfo lig
     if (isActive)
         colorRange = 1;
     else
-        colorRange = 2;
+        colorRange = 1.5;
 
-    QColor brickColor = QColor(255 / colorRange, 157 / colorRange, 87 / colorRange);
+    QColor brickColor = QColor(214 / colorRange, 255 / colorRange, 250 / colorRange);
     for (int i = 0; i < 3; i++)
         lights[i].object = QVector3D(brickColor.red(), brickColor.green(), brickColor.blue());
 
-    float vertices[myModel.howPolygons() * 3][3];		//массив точек модели
-    float normals[myModel.howPolygons() * 3][3];		//массив точек модели
+    float vertices[myModel.howPolygons() * 3][3];	//массив точек модели
+    float normals[myModel.howPolygons() * 3][3];	//массив точек модели
+    float texturePos[myModel.howPolygons() * 3][2];	//массив текстурных координат
 
-    myModel.getStaticModel(vertices, normals);
+    myModel.getStaticModel(vertices, normals, texturePos);
 
     shaderProgram.bind();
 
+    glBindTexture(GL_TEXTURE_2D, tid);
     setLighting(shaderProgram, lights);
 
     // Зададим матрицы для вершинного шейдера
@@ -266,12 +274,17 @@ void MyModel::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInfo lig
     shaderProgram.setAttributeArray("normal", (float*)normals, 3);
     shaderProgram.enableAttributeArray("normal");
 
+    // Передаем шейдеру весь массив текстурных координат
+    shaderProgram.setAttributeArray("texture", (float*)texturePos, 2);
+    shaderProgram.enableAttributeArray("texture");
+
     // Рисование примитива по координатам, заданным в массиве
     // Второй параметр означает, что модель состоит из model.faces.size() граней, каждая из которых содержит 3 точки
     glDrawArrays(GL_TRIANGLES, 0, myModel.howPolygons() * 3);
 
     shaderProgram.disableAttributeArray("vertex");
     shaderProgram.disableAttributeArray("normal");
+    shaderProgram.disableAttributeArray("texture");
     shaderProgram.release();
 }
 
@@ -310,71 +323,24 @@ PlaneAndAxis::PlaneAndAxis(float deepOf, QMatrix4x4 R) : Brick() {
     resetModelView();
 }
 
-void PlaneAndAxis::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInfo lights[]) {
+void PlaneAndAxis::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInfo lights[], GLuint tid) {
 
-    float vertices[44 * 2][3];		//массив точек модели
-    GLushort indeces[44 * 2];		//массив граней, которые представляют собой индексы в массике точек
-
-    //начинаем построение сетки с самых дальних точек
-    QVector3D leftPY(21 * VALUE_TURN_X, 21 * VALUE_TURN_Y, 0.0);
-    QVector3D rightPY(-21 * VALUE_TURN_X, 21 * VALUE_TURN_Y, 0.0);
-    QVector3D leftPX(21 * VALUE_TURN_X, 21 * VALUE_TURN_Y, 0.0);
-    QVector3D rightPX(21 * VALUE_TURN_X, -21 * VALUE_TURN_Y, 0.0);
-
-    //после чего по каждой координате x и y отступаем соотв. расстояние, кратное размеру Блока по соотв. координате
-    for (int i = 0; i < 44 * 2; i += 4) {
-
-        vertices[i][0] = leftPY.x();
-        vertices[i][1] = leftPY.y();
-        vertices[i][2] = leftPY.z();
-        vertices[i + 1][0] = rightPY.x();
-        vertices[i + 1][1] = rightPY.y();
-        vertices[i + 1][2] = rightPY.z();
-        leftPY.setY(leftPY.y() - 2 * VALUE_TURN_Y);
-        rightPY.setY(rightPY.y() - 2 * VALUE_TURN_Y);
-
-        vertices[i + 2][0] = leftPX.x();
-        vertices[i + 2][1] = leftPX.y();
-        vertices[i + 2][2] = leftPX.z();
-        vertices[i + 3][0] = rightPX.x();
-        vertices[i + 3][1] = rightPX.y();
-        vertices[i + 3][2] = rightPX.z();
-        leftPX.setX(leftPX.x() - 2 * VALUE_TURN_X);
-        rightPX.setX(rightPX.x() - 2 * VALUE_TURN_X);
-    }
-
-    //иниц. массив вершин линий
-    for (int i = 0; i < 44 * 2; i += 4) {
-
-        indeces[i] = i;
-        indeces[i + 1] = i + 1;
-        indeces[i + 2] = i + 2;
-        indeces[i + 3] = i + 3;
-    }
+    float value_turn_x = 0.0832;
+    float value_turn_y = 0.0832;
 
     shaderProgram.bind();
+    glBindTexture(GL_TEXTURE_2D, tid);
 
     // Зададим матрицу, на которую будут умножены однородные координаты вершин в вершинном шейдере
     shaderProgram.setUniformValue("matrix", projectMatrix * modelViewMatrix);
-    shaderProgram.setUniformValue("color", QColor(77, 77, 77));
-
-    // Передадим шейдеру весь массив вершин
-    // Третий параметр равен трем, потому что одна вершина квадрата задана в массиве vertices тремя числами
-    shaderProgram.setAttributeArray("vertex", (float*)vertices, 3);
-    shaderProgram.enableAttributeArray("vertex");
-
-    // Рисование примитива по координатам, заданным в массиве
-    // Второй параметр означает, что модель состоит из model.faces.size() граней, каждая из которых содержит 3 точки
-    glDrawElements(GL_LINES, 2 * 44, GL_UNSIGNED_SHORT, indeces);
-
-    shaderProgram.disableAttributeArray("vertex");
 
     //координаты точек линий для координатных осей, а так же их цвета
     //x - красная линия, y - зеленая линия, z - синяя
-    float lineXVert[2][3] = {{-2, 0, 0}, {2, 0, 0}};
-    float lineYVert[2][3] = {{0, 2, 0}, {0, -2, 0}};
-    float lineZVert[2][3] = {{0, 0, 0}, {0, 0, -2}};
+    float lineXVert[2][3] = {{-2, 0, -0.001}, {2, 0, -0.001}};
+    float lineYVert[2][3] = {{0, 2, -0.001}, {0, -2, -0.001}};
+    float lineZVert[2][3] = {{0, 0, -0.001}, {0, 0, -2}};
 
+    glLineWidth(2);
     shaderProgram.setUniformValue("color", QColor(150, 0, 0));
     shaderProgram.setAttributeArray("vertex", (float*)lineXVert, 3);
     shaderProgram.enableAttributeArray("vertex");
@@ -392,6 +358,19 @@ void PlaneAndAxis::draw(QGLShaderProgram &shaderProgram, bool isActive, LightInf
     shaderProgram.enableAttributeArray("vertex");
     glDrawArrays(GL_LINES, 0, 2);
     shaderProgram.disableAttributeArray("vertex");
+
+    float plane[4][3] = { {21 * value_turn_x, 21 * value_turn_y, 0.0}, {21 * value_turn_x, -21 * value_turn_y, 0.0},
+                          {-21 * value_turn_x, -21 * value_turn_y, 0.0}, {-21 * value_turn_x, 21 * value_turn_y, 0.0}};
+
+    float texCoord[4][2] = { {0.0, 0.0}, {1.0, 0.0}, {1.0, 1.0}, {0.0, 1.0}};
+    shaderProgram.setUniformValue("color", QColor(100, 100, 100));
+    shaderProgram.setAttributeArray("vertex", (float*)plane, 3);
+    shaderProgram.enableAttributeArray("vertex");
+    shaderProgram.setAttributeArray("texture", (float*)texCoord, 2);
+    shaderProgram.enableAttributeArray("texture");
+    glDrawArrays(GL_QUADS, 0, 4);
+    shaderProgram.disableAttributeArray("vertex");
+    shaderProgram.disableAttributeArray("texture");
 
     shaderProgram.release();
 }

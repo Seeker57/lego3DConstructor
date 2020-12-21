@@ -1,6 +1,7 @@
 #version 130
 
 uniform vec4 color;
+uniform sampler2D Tex1;
 
 struct LightInfo {
 
@@ -15,6 +16,7 @@ uniform LightInfo lights[3];
 in vec3 fragNormal;
 in vec3 fragPos;
 in vec4 fragColor;
+in vec2 texCoord;
 
 float Kconst = 1.0;
 float Klinaer = 0.01;
@@ -25,6 +27,8 @@ out vec4 varColor;
 void main(void) {
 
    vec3 result;
+   vec4 texColor = texture2D( Tex1, texCoord);
+
    for (int i = 0; i < 3; i++ ) {
 
         vec3 lightDir = normalize(lights[i].pos - fragPos);   	//направление источника
@@ -41,6 +45,6 @@ void main(void) {
 
    }
 
-   result += color.xyz;
+   result += color.xyz * texColor.xyz;
    varColor = vec4(result, 1.0f);
 }

@@ -55,7 +55,7 @@ void readObj::printPoints() {
     }
 }
 
-void readObj::getVertexAndFaces(float vertex[][3], float normals[][3]) {
+void readObj::getVertexAndFaces(float vertex[][3], float normals[][3], float texCoords[][2]) {
 
     for (int i = 0; i < faces.size(); i++) {
 
@@ -88,5 +88,12 @@ void readObj::getVertexAndFaces(float vertex[][3], float normals[][3]) {
         normals[i*3 + 2][0] = normal.x();
         normals[i*3 + 2][1] = normal.y();
         normals[i*3 + 2][2] = normal.z();
+
+        texCoords[i*3][0] = 0.0f;
+        texCoords[i*3][1] = 0.0f;
+        texCoords[i*3 + 1][0] = 1.0f;
+        texCoords[i*3 + 1][1] = 0.0f;
+        texCoords[i*3 + 2][0] = 0.5f;
+        texCoords[i*3 + 2][1] = 1.0f;
     }
 }
