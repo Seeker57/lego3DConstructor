@@ -1,15 +1,18 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    player = new QMediaPlayer;
 }
 
 MainWindow::~MainWindow()
 {
+    delete player;
     delete ui;
 }
 
@@ -33,6 +36,15 @@ void MainWindow::paintEvent(QPaintEvent* event) {
 
     ui->pushButton_6->setFixedSize(sizeButton, sizeButton);
     ui->pushButton_6->setIconSize(QSize(sizeButton - 4, sizeButton - 4));
+
+    ui->pushButton_7->setFixedSize(sizeButton, sizeButton);
+    ui->pushButton_7->setIconSize(QSize(sizeButton - 12, sizeButton - 12));
+
+    ui->pushButton_8->setFixedSize(sizeButton, sizeButton);
+    ui->pushButton_8->setIconSize(QSize(sizeButton - 4, sizeButton - 4));
+
+    ui->pushButton_9->setFixedSize(sizeButton, sizeButton);
+    ui->pushButton_9->setIconSize(QSize(sizeButton - 4, sizeButton - 4));
 }
 
 void MainWindow::on_pushButton_clicked() {
@@ -49,6 +61,28 @@ void MainWindow::on_pushButton_5_clicked() {
 
 void MainWindow::on_pushButton_6_clicked() {
     ui->openGLWidget->addBrick(":/legoBricks/models/2x2L.obj");
+}
+
+void MainWindow::on_pushButton_7_clicked() {
+    player->setMedia(QUrl("qrc:/music/audio/main_theme.mp3"));
+    player->setVolume(10);
+    player->play();
+}
+
+void MainWindow::on_pushButton_8_clicked() {
+    player->pause();
+}
+
+void MainWindow::on_pushButton_9_clicked()
+{
+    QPixmap screenshot = QPixmap::grabWindow(QApplication::desktop()->winId());
+    int num;
+    srand(time(0));
+    num = rand() % 100;
+    QString name_screen = QString::number(num) + ".png";
+    screenshot.save(name_screen, "png");
+    QString inform_str = "Скриншот '" + name_screen + "' сохранен в папке 'build-lab6-Desktop_Qt_5_15_0_MinGW_64_bit-Debug'";
+    QMessageBox::information(NULL,QObject::tr("Screenshot"),tr(inform_str.toStdString().c_str()));
 }
 
 void MainWindow::on_pushButton_3_clicked() {

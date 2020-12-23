@@ -28,6 +28,8 @@ FORMS += \
 
 LIBS += -lopengl32 -lglu32
 
+QT += multimedia
+
 DISTFILES += \
     4x2L.obj \
     fragmentShader.fsh \

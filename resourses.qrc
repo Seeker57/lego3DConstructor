@@ -25,5 +25,11 @@
         <file>icons/planeTex.tif</file>
         <file>icons/block_texture3.tif</file>
         <file>icons/block_texture4.tif</file>
+        <file>icons/stop_music.png</file>
+        <file>icons/screen.png</file>
+        <file>icons/play.png</file>
+    </qresource>
+    <qresource prefix="/music">
+        <file>audio/main_theme.mp3</file>
     </qresource>
 </RCC>
