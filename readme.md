@@ -4,8 +4,10 @@
 
 # Скриншоты работы программы
 
+<div style="text-align:center">
 ![2](screenshots/1.jpg)
 
 ![3](screenshots/2.jpg)
 
 ![4](screenshots/3.jpg)
+</div>
