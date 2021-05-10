@@ -1,4 +1,4 @@
-# процесс разработки модели в Blender3D
+# Процесс разработки модели в Blender3D
 
 ![1](screenshots/blender.png)
 
